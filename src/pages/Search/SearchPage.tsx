@@ -37,7 +37,7 @@ import useTheme from '@hooks/useTheme';
 import useThemeStyles from '@hooks/useThemeStyles';
 import {confirmReadyToOpenApp} from '@libs/actions/App';
 import {setupMergeTransactionDataAndNavigate} from '@libs/actions/MergeTransaction';
-import {moveIOUReportToPolicy, moveIOUReportToPolicyAndInviteSubmitter, searchInServer} from '@libs/actions/Report';
+import {moveIOUReportToPolicy, moveIOUReportToPolicyAndInviteSubmitter, searchInServer, deleteAppReport} from '@libs/actions/Report';
 import {
     approveMoneyRequestOnSearch,
     deleteMoneyRequestOnSearch,
@@ -436,12 +436,38 @@ function SearchPage({route}: SearchPageProps) {
             return;
         }
 
+        const selectedKeys = selectedTransactionsKeys.filter((id) => selectedTransactions[id]?.isSelected);
+        const emptyReportKeys = selectedKeys.filter((key) => key.startsWith('empty_report_'));
+        const realTransactionKeys = selectedKeys.filter((key) => !key.startsWith('empty_report_'));
+        const emptyReportIDs = emptyReportKeys.map((key) => key.replace('empty_report_', ''));
+        const totalToDelete = realTransactionKeys.length + emptyReportIDs.length;
+
+        if (totalToDelete === 0) {
+            return;
+        }
+
         // Use InteractionManager to ensure this runs after the dropdown modal closes
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         InteractionManager.runAfterInteractions(async () => {
+            const hasRealTransactions = realTransactionKeys.length > 0;
+            const hasEmptyReportsOnly = !hasRealTransactions && emptyReportIDs.length > 0;
+
+            let title: string;
+            let prompt: string;
+
+            if (hasEmptyReportsOnly) {
+                // Report-level wording, no {count} interpolation
+                title = translate('iou.deleteReport');
+                prompt = translate('iou.deleteReportConfirmation');
+            } else {
+                // Existing expense wording with {count}
+                title = translate('iou.deleteExpense', {count: totalToDelete});
+                prompt = translate('iou.deleteConfirmation', {count: totalToDelete});
+            }
+
             const result = await showConfirmModal({
-                title: translate('iou.deleteExpense', {count: selectedTransactionsKeys.length}),
-                prompt: translate('iou.deleteConfirmation', {count: selectedTransactionsKeys.length}),
+                title,
+                prompt,
                 confirmText: translate('common.delete'),
                 cancelText: translate('common.cancel'),
                 danger: true,
@@ -453,11 +479,34 @@ function SearchPage({route}: SearchPageProps) {
             // We need to wait for modal to fully disappear before clearing them to avoid translation flicker between singular vs plural
             // eslint-disable-next-line @typescript-eslint/no-deprecated
             InteractionManager.runAfterInteractions(() => {
-                deleteMoneyRequestOnSearch(hash, selectedTransactionsKeys);
+                if (realTransactionKeys.length > 0) {
+                    deleteMoneyRequestOnSearch(hash, realTransactionKeys);
+                }
+                if (emptyReportIDs.length > 0) {
+                    const currentUserEmail = currentUserPersonalDetails?.login ?? '';
+                    const safeTransactions = (allTransactions ?? {}) as Record<string, Transaction>;
+                    const safeViolations = allTransactionViolations ?? {};
+
+                    emptyReportIDs.forEach((reportID) => {
+                        deleteAppReport(reportID, currentUserEmail, safeTransactions, safeViolations, bankAccountList);
+                    });
+                }
                 clearSelectedTransactions();
             });
         });
-    }, [isOffline, showConfirmModal, translate, selectedTransactionsKeys, hash, clearSelectedTransactions]);
+    }, [
+        isOffline,
+        showConfirmModal,
+        translate,
+        selectedTransactionsKeys,
+        selectedTransactions,
+        hash,
+        clearSelectedTransactions,
+        currentUserPersonalDetails,
+        allTransactions,
+        allTransactionViolations,
+        bankAccountList,
+    ]);
 
     const onBulkPaySelected = useCallback(
         (paymentMethod?: PaymentMethodType, additionalData?: Record<string, unknown>) => {
@@ -617,7 +666,11 @@ function SearchPage({route}: SearchPageProps) {
     }, [selectedTransactionReportIDs, currentUserPersonalDetails?.accountID, currentSearchResults?.data]);
 
     const headerButtonsOptions = useMemo(() => {
-        if (selectedTransactionsKeys.length === 0 || status == null || !hash) {
+        const selectedKeys = selectedTransactionsKeys.filter((id) => selectedTransactions[id]?.isSelected);
+        const emptyReportKeys = selectedKeys.filter((key) => key.startsWith('empty_report_'));
+        const hasEmptyReportsSelected = emptyReportKeys.length > 0;
+
+        if (selectedKeys.length === 0 || status == null || !hash) {
             return CONST.EMPTY_ARRAY as unknown as Array<DropdownOption<SearchHeaderOptionValue>>;
         }
 
@@ -684,6 +737,25 @@ function SearchPage({route}: SearchPageProps) {
         // If all matching items are selected, we don't give the user additional options, we only allow them to export the selected items
         if (areAllMatchingItemsSelected) {
             return [exportButtonOption];
+        }
+        // If any empty report is selected (only empty or mixed),
+        // show only Export + Delete.
+        if (hasEmptyReportsSelected) {
+            options.push(exportButtonOption);
+
+            if (!isOffline) {
+                options.push({
+                    icon: expensifyIcons.Trashcan,
+                    text: translate('search.bulkActions.delete'),
+                    value: CONST.SEARCH.BULK_ACTION_TYPES.DELETE,
+                    shouldCloseModalOnSelect: true,
+                    onSelected: () => {
+                        handleDeleteSelectedTransactions();
+                    },
+                });
+            }
+
+            return options;
         }
 
         // Otherwise, we provide the full set of options depending on the state of the selected transactions and reports

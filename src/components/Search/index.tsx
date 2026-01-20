@@ -9,7 +9,14 @@ import FullPageErrorView from '@components/BlockingViews/FullPageErrorView';
 import FullPageOfflineBlockingView from '@components/BlockingViews/FullPageOfflineBlockingView';
 import ConfirmModal from '@components/ConfirmModal';
 import SearchTableHeader from '@components/SelectionListWithSections/SearchTableHeader';
-import type {ReportActionListItemType, SearchListItem, SelectionListHandle, TransactionGroupListItemType, TransactionListItemType} from '@components/SelectionListWithSections/types';
+import type {
+    ReportActionListItemType,
+    SearchListItem,
+    SelectionListHandle,
+    TransactionGroupListItemType,
+    TransactionListItemType,
+    TransactionReportGroupListItemType,
+} from '@components/SelectionListWithSections/types';
 import SearchRowSkeleton from '@components/Skeletons/SearchRowSkeleton';
 import {WideRHPContext} from '@components/WideRHPContextProvider';
 import useArchivedReportsIdSet from '@hooks/useArchivedReportsIdSet';
@@ -623,6 +630,14 @@ function Search({
                 };
             }
         }
+        // Merge in synthetic empty-report selections
+        Object.keys(selectedTransactions).forEach((key) => {
+            if (key.startsWith('empty_report_') && selectedTransactions[key]?.isSelected) {
+                newTransactionList[key] = selectedTransactions[key];
+            }
+        });
+
+        // If no selection at all (and nothing was previously selected), do nothing
         if (isEmptyObject(newTransactionList) && Object.keys(selectedTransactions).length === 0) {
             return;
         }
@@ -701,6 +716,44 @@ function Search({
             }
 
             const currentTransactions = itemTransactions ?? item.transactions;
+            // Empty expense reports: synthetic selection 'empty_report_<reportID>'
+            if (isExpenseReportType && currentTransactions.length === 0 && isTransactionGroupListItemType(item)) {
+                const reportID = item.reportID;
+                if (!reportID) {
+                    return;
+                }
+                const emptyReportKey = `empty_report_${reportID}`;
+
+                if (selectedTransactions[emptyReportKey]?.isSelected) {
+                    const {[emptyReportKey]: _removed, ...rest} = selectedTransactions;
+                    setSelectedTransactions(rest, filteredData);
+                } else {
+                    const expenseReportItem = item as TransactionReportGroupListItemType;
+                    setSelectedTransactions(
+                        {
+                            ...selectedTransactions,
+                            [emptyReportKey]: {
+                                isSelected: true,
+                                canReject: false,
+                                canHold: false,
+                                isHeld: false,
+                                canUnhold: false,
+                                canSplit: false,
+                                hasBeenSplit: false,
+                                canChangeReport: false,
+                                action: expenseReportItem.action ?? CONST.SEARCH.ACTION_TYPES.VIEW,
+                                reportID,
+                                policyID: item.policyID,
+                                amount: 0,
+                                currency: expenseReportItem.currency ?? CONST.CURRENCY.USD,
+                                isFromOneTransactionReport: false,
+                            },
+                        },
+                        filteredData,
+                    );
+                }
+                return;
+            }
             if (currentTransactions.some((transaction) => selectedTransactions[transaction.keyForList]?.isSelected)) {
                 const reducedSelectedTransactions: SelectedTransactions = {...selectedTransactions};
 
@@ -952,20 +1005,56 @@ function Search({
         }
 
         if (areItemsGrouped) {
-            setSelectedTransactions(
-                Object.fromEntries(
-                    (filteredData as TransactionGroupListItemType[]).flatMap((item) =>
-                        item.transactions
-                            .filter((t) => !isTransactionPendingDelete(t))
-                            .map((transactionItem) => {
-                                const itemTransaction = transactions?.[`${ONYXKEYS.COLLECTION.TRANSACTION}${transactionItem.transactionID}`] as OnyxEntry<Transaction>;
-                                const originalItemTransaction = transactions?.[`${ONYXKEYS.COLLECTION.TRANSACTION}${itemTransaction?.comment?.originalTransactionID}`];
-                                return mapTransactionItemToSelectedEntry(transactionItem, itemTransaction, originalItemTransaction, email ?? '', outstandingReportsByPolicyID);
-                            }),
-                    ),
-                ),
-                filteredData,
+            const groupedItems = filteredData as TransactionGroupListItemType[];
+
+            // 1) Non-empty reports – existing behavior
+            const transactionEntries = groupedItems.flatMap((item) =>
+                item.transactions
+                    .filter((t) => !isTransactionPendingDelete(t))
+                    .map((transactionItem) => {
+                        const itemTransaction = transactions?.[
+                            `${ONYXKEYS.COLLECTION.TRANSACTION}${transactionItem.transactionID}`
+                        ] as OnyxEntry<Transaction>;
+                        const originalItemTransaction = transactions?.[
+                            `${ONYXKEYS.COLLECTION.TRANSACTION}${itemTransaction?.comment?.originalTransactionID}`
+                        ];
+                        return mapTransactionItemToSelectedEntry(transactionItem, itemTransaction, originalItemTransaction, email ?? '', outstandingReportsByPolicyID);
+                    }),
             );
+
+            // 2) Empty reports – synthetic entries
+            const emptyReportEntries: Array<[string, SelectedTransactionInfo]> = [];
+            if (isExpenseReportType) {
+                groupedItems
+                    .filter((item) => item.transactions.length === 0 && item.reportID)
+                    .forEach((item) => {
+                        const expenseReportItem = item as TransactionReportGroupListItemType;
+                        const reportID = expenseReportItem.reportID;
+                        const emptyReportKey = `empty_report_${reportID}`;
+
+                        emptyReportEntries.push([
+                            emptyReportKey,
+                            {
+                                isSelected: true,
+                                canReject: false,
+                                canHold: false,
+                                isHeld: false,
+                                canUnhold: false,
+                                canSplit: false,
+                                hasBeenSplit: false,
+                                canChangeReport: false,
+                                action: expenseReportItem.action ?? CONST.SEARCH.ACTION_TYPES.VIEW,
+                                reportID,
+                                policyID: expenseReportItem.policyID,
+                                amount: 0,
+                                currency: expenseReportItem.currency ?? CONST.CURRENCY.USD,
+                                isFromOneTransactionReport: false,
+                            },
+                        ]);
+                    });
+            }
+
+            setSelectedTransactions(Object.fromEntries([...transactionEntries, ...emptyReportEntries]), filteredData);
 
             return;
         }

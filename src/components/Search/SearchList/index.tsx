@@ -201,14 +201,27 @@ function SearchList({
         return data;
     }, [data, groupBy, type]);
     const flattenedItemsWithoutPendingDelete = useMemo(() => flattenedItems.filter((t) => t?.pendingAction !== CONST.RED_BRICK_ROAD_PENDING_ACTION.DELETE), [flattenedItems]);
+    const emptyReportsCount = useMemo(() => {
+        if (!isTransactionGroupListItemArray(data)) {
+            return 0;
+        }
+        return data.filter((item) => item.transactions.length === 0).length;
+    }, [data]);
 
+    const totalSelectableItems = flattenedItemsWithoutPendingDelete.length + emptyReportsCount;
     const selectedItemsLength = useMemo(() => {
-        return flattenedItemsWithoutPendingDelete.reduce((acc, item) => {
+        const transactionCount = flattenedItemsWithoutPendingDelete.reduce((acc, item) => {
             if (item.keyForList && selectedTransactions[item.keyForList]?.isSelected) {
                 return acc + 1;
             }
             return acc;
         }, 0);
+
+        const emptyReportCount = Object.keys(selectedTransactions).filter(
+            (key) => key.startsWith('empty_report_') && selectedTransactions[key]?.isSelected,
+        ).length;
+
+        return transactionCount + emptyReportCount;
     }, [flattenedItemsWithoutPendingDelete, selectedTransactions]);
 
     const itemsWithSelection = useMemo(() => {
@@ -220,29 +233,35 @@ function SearchList({
                 if (!canSelectMultiple) {
                     itemWithSelection = {...item, isSelected: false};
                 } else {
-                    const hasAnySelected = item.transactions.some((t) => t.keyForList && selectedTransactions[t.keyForList]?.isSelected);
-
-                    if (!hasAnySelected) {
-                        itemWithSelection = {...item, isSelected: false};
+                    if (item.transactions.length === 0 && item.reportID) {
+                        const emptyReportKey = `empty_report_${item.reportID}`;
+                        isSelected = !!selectedTransactions[emptyReportKey]?.isSelected;
+                        itemWithSelection = {...item, isSelected};
                     } else {
-                        let allNonDeletedSelected = true;
-                        let hasNonDeletedTransactions = false;
+                        const hasAnySelected = item.transactions.some((t) => t.keyForList && selectedTransactions[t.keyForList]?.isSelected);
 
-                        const mappedTransactions = item.transactions.map((transaction) => {
-                            const isTransactionSelected = !!(transaction.keyForList && selectedTransactions[transaction.keyForList]?.isSelected);
+                        if (!hasAnySelected) {
+                            itemWithSelection = {...item, isSelected: false};
+                        } else {
+                            let allNonDeletedSelected = true;
+                            let hasNonDeletedTransactions = false;
 
-                            if (transaction.pendingAction !== CONST.RED_BRICK_ROAD_PENDING_ACTION.DELETE) {
-                                hasNonDeletedTransactions = true;
-                                if (!isTransactionSelected) {
-                                    allNonDeletedSelected = false;
+                            const mappedTransactions = item.transactions.map((transaction) => {
+                                const isTransactionSelected = !!(transaction.keyForList && selectedTransactions[transaction.keyForList]?.isSelected);
+
+                                if (transaction.pendingAction !== CONST.RED_BRICK_ROAD_PENDING_ACTION.DELETE) {
+                                    hasNonDeletedTransactions = true;
+                                    if (!isTransactionSelected) {
+                                        allNonDeletedSelected = false;
+                                    }
                                 }
-                            }
 
-                            return {...transaction, isSelected: isTransactionSelected};
-                        });
+                                return {...transaction, isSelected: isTransactionSelected};
+                            });
 
-                        isSelected = hasNonDeletedTransactions && allNonDeletedSelected;
-                        itemWithSelection = {...item, isSelected, transactions: mappedTransactions};
+                            isSelected = hasNonDeletedTransactions && allNonDeletedSelected;
+                            itemWithSelection = {...item, isSelected, transactions: mappedTransactions};
+                        }
                     }
                 }
             } else {
@@ -314,10 +333,6 @@ function SearchList({
 
             // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
             if (shouldPreventLongPressRow || !isSmallScreenWidth || item?.isDisabled || item?.isDisabledCheckbox) {
-                return;
-            }
-            // disable long press for empty expense reports
-            if ('transactions' in item && item.transactions.length === 0 && !groupBy) {
                 return;
             }
             if (isMobileSelectionModeEnabled) {
@@ -457,7 +472,7 @@ function SearchList({
 
     const tableHeaderVisible = canSelectMultiple || !!SearchTableHeader;
     const selectAllButtonVisible = canSelectMultiple && !SearchTableHeader;
-    const isSelectAllChecked = selectedItemsLength > 0 && selectedItemsLength === flattenedItemsWithoutPendingDelete.length && hasLoadedAllTransactions;
+    const isSelectAllChecked = selectedItemsLength > 0 && selectedItemsLength === totalSelectableItems && hasLoadedAllTransactions;
 
     const content = (
         <View style={[styles.flex1, !isKeyboardShown && safeAreaPaddingBottomStyle, containerStyle]}>
@@ -467,11 +482,11 @@ function SearchList({
                         <Checkbox
                             accessibilityLabel={translate('workspace.people.selectAll')}
                             isChecked={isSelectAllChecked}
-                            isIndeterminate={selectedItemsLength > 0 && (selectedItemsLength !== flattenedItemsWithoutPendingDelete.length || !hasLoadedAllTransactions)}
+                            isIndeterminate={selectedItemsLength > 0 && (selectedItemsLength !== totalSelectableItems || !hasLoadedAllTransactions)}
                             onPress={() => {
                                 onAllCheckboxPress();
                             }}
-                            disabled={flattenedItems.length === 0}
+                            disabled={totalSelectableItems === 0}
                         />
                     )}
 

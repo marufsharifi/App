@@ -149,9 +149,9 @@ function TransactionGroupListItem<TItem extends ListItem>({
     const isIndeterminate = selectedItemsLength > 0 && selectedItemsLength !== transactionsWithoutPendingDelete.length;
 
     const isEmpty = transactions.length === 0;
-    // Currently only the transaction report groups have transactions where the empty view makes sense
     const shouldDisplayEmptyView = isEmpty && isExpenseReportType;
-    const isDisabledOrEmpty = isEmpty || isDisabled;
+    // Don't mark the group disabled just because it's empty
+    const isDisabledOrEmpty = isDisabled;
 
     const searchTransactions = useCallback(
         (pageSize = 0) => {
@@ -208,11 +208,9 @@ function TransactionGroupListItem<TItem extends ListItem>({
     }, [isExpenseReportType, transactions.length, onSelectRow, transactionPreviewData, item, handleToggle]);
 
     const onLongPress = useCallback(() => {
-        if (isEmpty) {
-            return;
-        }
+        // Allow long-press selection even when there are no transactions
         onLongPressRow?.(item, isExpenseReportType ? undefined : transactions);
-    }, [isEmpty, isExpenseReportType, item, onLongPressRow, transactions]);
+    }, [isExpenseReportType, item, onLongPressRow, transactions]);
 
     const onExpandedRowLongPress = useCallback(
         (transaction: TransactionListItemType) => {
