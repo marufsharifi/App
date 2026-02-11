@@ -438,6 +438,7 @@ function BaseSelectionListWithSections<TItem extends ListItem>({
         maxIndex: Math.min(flattenedSections.allOptions.length - 1, CONST.MAX_SELECTION_LIST_PAGE_LENGTH * currentPage - 1),
         disabledIndexes: disabledArrowKeyIndexes,
         isActive: shouldSubscribeToArrowKeyEvents && isFocused,
+        shouldIgnoreHoverIndex: () => isTextInputFocusedRef.current,
         onFocusedIndexChange: (index: number) => {
             const focusedItem = flattenedSections.allOptions.at(index);
             if (focusedItem) {
@@ -646,12 +647,27 @@ function BaseSelectionListWithSections<TItem extends ListItem>({
 
     const setCurrentHoverIndex = useCallback(
         (hoverIndex: number | null) => {
+            if (hoverIndex === null) {
+                currentHoverIndexRef.current = null;
+                return;
+            }
             if (shouldDisableHoverStyle) {
                 return;
             }
             currentHoverIndexRef.current = hoverIndex;
         },
         [currentHoverIndexRef, shouldDisableHoverStyle],
+    );
+
+    const updateTextInputFocusState = useCallback(
+        (isTextInputFocused: boolean) => {
+            isTextInputFocusedRef.current = isTextInputFocused;
+
+            if (isTextInputFocused) {
+                currentHoverIndexRef.current = null;
+            }
+        },
+        [currentHoverIndexRef],
     );
 
     const renderItem = ({item, index, section}: SectionListRenderItemInfo<TItem, SectionWithIndexOffset<TItem>>) => {
@@ -755,8 +771,8 @@ function BaseSelectionListWithSections<TItem extends ListItem>({
                             textInputRef.current = element as RNTextInput;
                         }
                     }}
-                    onFocus={() => (isTextInputFocusedRef.current = true)}
-                    onBlur={() => (isTextInputFocusedRef.current = false)}
+                    onFocus={() => updateTextInputFocusState(true)}
+                    onBlur={() => updateTextInputFocusState(false)}
                     label={textInputLabel}
                     accessibilityLabel={textInputLabel}
                     hint={textInputHint}
@@ -950,9 +966,12 @@ function BaseSelectionListWithSections<TItem extends ListItem>({
      *
      * @param isTextInputFocused - Is external TextInput focused.
      */
-    const updateExternalTextInputFocus = useCallback((isTextInputFocused: boolean) => {
-        isTextInputFocusedRef.current = isTextInputFocused;
-    }, []);
+    const updateExternalTextInputFocus = useCallback(
+        (isTextInputFocused: boolean) => {
+            updateTextInputFocusState(isTextInputFocused);
+        },
+        [updateTextInputFocusState],
+    );
 
     useImperativeHandle(
         ref,
@@ -966,7 +985,16 @@ function BaseSelectionListWithSections<TItem extends ListItem>({
             focusTextInput,
             scrollToFocusedInput,
         }),
-        [scrollAndHighlightItem, clearInputAfterSelect, updateAndScrollToFocusedIndex, updateExternalTextInputFocus, scrollToIndex, getFocusedOption, focusTextInput, scrollToFocusedInput],
+        [
+            scrollAndHighlightItem,
+            clearInputAfterSelect,
+            updateAndScrollToFocusedIndex,
+            updateExternalTextInputFocus,
+            scrollToIndex,
+            getFocusedOption,
+            focusTextInput,
+            scrollToFocusedInput,
+        ],
     );
 
     /** Selects row when pressing Enter */

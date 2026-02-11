@@ -19,6 +19,7 @@ type Config = {
     isFocused?: boolean;
     setHasKeyBeenPressed?: () => void;
     onArrowUpDownCallback?: () => void;
+    shouldIgnoreHoverIndex?: () => boolean;
 };
 
 type UseArrowKeyFocusManager = [number, (index: number) => void, RefObject<number | null>];
@@ -57,6 +58,7 @@ export default function useArrowKeyFocusManager({
     isFocused = true,
     setHasKeyBeenPressed,
     onArrowUpDownCallback = () => {},
+    shouldIgnoreHoverIndex,
 }: Config): UseArrowKeyFocusManager {
     const [focusedIndex, setFocusedIndex] = useState(initialFocusedIndex);
     const prevIsFocusedIndex = usePrevious(focusedIndex);
@@ -94,7 +96,8 @@ export default function useArrowKeyFocusManager({
         const nextIndex = disableCyclicTraversal ? -1 : maxIndex;
         setHasKeyBeenPressed?.();
         setFocusedIndex((actualIndexParam) => {
-            const actualIndex = currentHoverIndexRef.current ?? actualIndexParam;
+            const useHoverIndex = !shouldIgnoreHoverIndex?.();
+            const actualIndex = (useHoverIndex ? currentHoverIndexRef.current : null) ?? actualIndexParam;
             const currentFocusedIndex = actualIndex > 0 ? actualIndex - (itemsPerRow ?? 1) : nextIndex;
             let newFocusedIndex = currentFocusedIndex;
 
@@ -119,7 +122,7 @@ export default function useArrowKeyFocusManager({
 
         currentHoverIndexRef.current = null;
         onArrowUpDownCallback();
-    }, [maxIndex, isFocused, disableCyclicTraversal, itemsPerRow, disabledIndexes, allowNegativeIndexes, setHasKeyBeenPressed, onArrowUpDownCallback]);
+    }, [maxIndex, isFocused, disableCyclicTraversal, itemsPerRow, disabledIndexes, allowNegativeIndexes, setHasKeyBeenPressed, onArrowUpDownCallback, shouldIgnoreHoverIndex]);
 
     useKeyboardShortcut(CONST.KEYBOARD_SHORTCUTS.ARROW_UP, arrowUpCallback, arrowConfig);
 
@@ -133,7 +136,8 @@ export default function useArrowKeyFocusManager({
 
         setFocusedIndex((actualIndexParam) => {
             let currentFocusedIndex = -1;
-            const actualIndex = currentHoverIndexRef.current ?? actualIndexParam;
+            const useHoverIndex = !shouldIgnoreHoverIndex?.();
+            const actualIndex = (useHoverIndex ? currentHoverIndexRef.current : null) ?? actualIndexParam;
 
             if (actualIndex === -1) {
                 currentFocusedIndex = 0;
@@ -169,7 +173,7 @@ export default function useArrowKeyFocusManager({
 
         currentHoverIndexRef.current = null;
         onArrowUpDownCallback();
-    }, [disableCyclicTraversal, disabledIndexes, isFocused, itemsPerRow, maxIndex, setHasKeyBeenPressed, onArrowUpDownCallback]);
+    }, [disableCyclicTraversal, disabledIndexes, isFocused, itemsPerRow, maxIndex, setHasKeyBeenPressed, onArrowUpDownCallback, shouldIgnoreHoverIndex]);
 
     useKeyboardShortcut(CONST.KEYBOARD_SHORTCUTS.ARROW_DOWN, arrowDownCallback, arrowConfig);
 
