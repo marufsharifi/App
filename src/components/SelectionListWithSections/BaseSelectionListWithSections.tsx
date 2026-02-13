@@ -985,16 +985,7 @@ function BaseSelectionListWithSections<TItem extends ListItem>({
             focusTextInput,
             scrollToFocusedInput,
         }),
-        [
-            scrollAndHighlightItem,
-            clearInputAfterSelect,
-            updateAndScrollToFocusedIndex,
-            updateExternalTextInputFocus,
-            scrollToIndex,
-            getFocusedOption,
-            focusTextInput,
-            scrollToFocusedInput,
-        ],
+        [scrollAndHighlightItem, clearInputAfterSelect, updateAndScrollToFocusedIndex, updateExternalTextInputFocus, scrollToIndex, getFocusedOption, focusTextInput, scrollToFocusedInput],
     );
 
     /** Selects row when pressing Enter */
