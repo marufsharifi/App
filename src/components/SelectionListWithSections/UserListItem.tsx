@@ -38,7 +38,6 @@ function UserListItem<TItem extends ListItem>({
     pressableStyle,
     shouldUseDefaultRightHandSideCheckmark,
     forwardedFSClass,
-    shouldDisableHoverStyle,
 }: UserListItemProps<TItem>) {
     const icons = useMemoizedLazyExpensifyIcons(['ArrowRight']);
     const styles = useThemeStyles();
@@ -95,7 +94,6 @@ function UserListItem<TItem extends ListItem>({
             keyForList={item.keyForList}
             onFocus={onFocus}
             shouldSyncFocus={shouldSyncFocus}
-            shouldDisableHoverStyle={shouldDisableHoverStyle}
         >
             {(hovered?: boolean) => (
                 <>

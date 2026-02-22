@@ -1,7 +1,7 @@
 import {useIsFocused} from '@react-navigation/native';
 import {FlashList} from '@shopify/flash-list';
 import type {FlashListRef, ListRenderItemInfo} from '@shopify/flash-list';
-import React, {useImperativeHandle, useRef} from 'react';
+import React, {useCallback, useImperativeHandle, useRef} from 'react';
 import type {TextInputKeyPressEvent} from 'react-native';
 import {View} from 'react-native';
 import type {ValueOf} from 'type-fest';
@@ -68,6 +68,8 @@ function BaseSelectionListWithSections<TItem extends ListItem>({
     shouldScrollToFocusedIndex = true,
     shouldSingleExecuteRowSelect = false,
     shouldPreventDefaultFocusOnSelectRow = false,
+    shouldDisableHoverStyle = false,
+    setShouldDisableHoverStyle = () => {},
 }: SelectionListWithSectionsProps<TItem>) {
     const styles = useThemeStyles();
     const isScreenFocused = useIsFocused();
@@ -112,6 +114,10 @@ function BaseSelectionListWithSections<TItem extends ListItem>({
 
     const debouncedScrollToIndex = useDebounce(scrollToIndex, CONST.TIMING.LIST_SCROLLING_DEBOUNCE_TIME, {leading: true, trailing: true});
 
+    const onArrowUpDownCallback = useCallback(() => {
+        setShouldDisableHoverStyle(true);
+    }, [setShouldDisableHoverStyle]);
+
     const [focusedIndex, setFocusedIndex] = useArrowKeyFocusManager({
         initialFocusedIndex,
         maxIndex: flattenedData.length - 1,
@@ -126,6 +132,7 @@ function BaseSelectionListWithSections<TItem extends ListItem>({
         },
         setHasKeyBeenPressed,
         isFocused: isScreenFocused,
+        onArrowUpDownCallback,
     });
 
     const getFocusedItem = (): TItem | undefined => {
@@ -324,6 +331,7 @@ function BaseSelectionListWithSections<TItem extends ListItem>({
                         shouldIgnoreFocus={shouldIgnoreFocus}
                         wrapperStyle={style?.listItemWrapperStyle}
                         titleStyles={style?.listItemTitleStyles}
+                        shouldDisableHoverStyle={shouldDisableHoverStyle}
                     />
                 );
             }
