@@ -1,4 +1,4 @@
-import type {Dispatch, ReactElement, ReactNode, SetStateAction} from 'react';
+import type {ReactElement, ReactNode} from 'react';
 import type {LayoutChangeEvent} from 'react-native';
 import type {ListItem} from '@components/SelectionList/ListItem/types';
 import type {BaseSelectionListProps} from '@components/SelectionList/types';
@@ -46,12 +46,6 @@ type SelectionListWithSectionsProps<TItem extends ListItem> = BaseSelectionListP
 
     /** Callback to fire when the list layout changes */
     onLayout?: (event: LayoutChangeEvent) => void;
-
-    /** Whether hover style should be disabled */
-    shouldDisableHoverStyle?: boolean;
-
-    /** Setter used to toggle hover style */
-    setShouldDisableHoverStyle?: Dispatch<SetStateAction<boolean>>;
 };
 
 type SelectionListWithSectionsHandle<TItem extends ListItem = ListItem> = {

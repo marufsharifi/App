@@ -27,14 +27,13 @@ type SearchQueryListItemProps = {
     onSelectRow: (item: SearchQueryItem) => void;
     onFocus?: ListItemFocusEventHandler;
     shouldSyncFocus?: boolean;
-    shouldDisableHoverStyle?: boolean;
 };
 
 function isSearchQueryItem(item: OptionData | SearchQueryItem): item is SearchQueryItem {
     return 'searchItemType' in item;
 }
 
-function SearchQueryListItem({item, isFocused, showTooltip, onSelectRow, onFocus, shouldSyncFocus, shouldDisableHoverStyle}: SearchQueryListItemProps) {
+function SearchQueryListItem({item, isFocused, showTooltip, onSelectRow, onFocus, shouldSyncFocus}: SearchQueryListItemProps) {
     const styles = useThemeStyles();
     const theme = useTheme();
 
@@ -50,7 +49,6 @@ function SearchQueryListItem({item, isFocused, showTooltip, onSelectRow, onFocus
             hoverStyle={item.isSelected && styles.activeComponentBG}
             shouldSyncFocus={shouldSyncFocus}
             showTooltip={showTooltip}
-            shouldDisableHoverStyle={shouldDisableHoverStyle}
         >
             <>
                 {!!item.singleIcon && (
