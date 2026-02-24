@@ -283,7 +283,7 @@ describe('BaseSelectionList', () => {
         expect(screen.getByTestId(`${CONST.BASE_LIST_ITEM_TEST_ID}3`)).toBeTruthy();
     });
 
-    it('should focus next/previous item relative to hovered item when arrow keys are pressed', async () => {
+    it('should focus next/previous item relative to keyboard-focused item when arrow keys are pressed', async () => {
         render(
             <BaseListItemRenderer
                 sections={[{data: largeMockSections}]}
@@ -302,9 +302,9 @@ describe('BaseSelectionList', () => {
             arrowDownCallback();
         });
 
-        // The item that gets focused will be the one following the hovered item
+        // Keyboard navigation should follow the current focused item, not hovered item
         await waitFor(() => {
-            expect(screen.getByTestId(`${CONST.BASE_LIST_ITEM_TEST_ID}11`)).toHaveStyle({backgroundColor: colors.productDark300});
+            expect(screen.getByTestId(`${CONST.BASE_LIST_ITEM_TEST_ID}2`)).toHaveStyle({backgroundColor: colors.productDark300});
         });
 
         act(() => {
@@ -313,7 +313,7 @@ describe('BaseSelectionList', () => {
         });
 
         await waitFor(() => {
-            expect(screen.getByTestId(`${CONST.BASE_LIST_ITEM_TEST_ID}9`)).toHaveStyle({backgroundColor: colors.productDark300});
+            expect(screen.getByTestId(`${CONST.BASE_LIST_ITEM_TEST_ID}0`)).toHaveStyle({backgroundColor: colors.productDark300});
         });
 
         act(() => {
@@ -321,7 +321,7 @@ describe('BaseSelectionList', () => {
         });
 
         await waitFor(() => {
-            expect(screen.getByTestId(`${CONST.BASE_LIST_ITEM_TEST_ID}10`)).toHaveStyle({backgroundColor: colors.productDark300});
+            expect(screen.getByTestId(`${CONST.BASE_LIST_ITEM_TEST_ID}1`)).toHaveStyle({backgroundColor: colors.productDark400});
         });
     });
 });
