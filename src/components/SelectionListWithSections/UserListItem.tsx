@@ -103,6 +103,7 @@ function UserListItem<TItem extends ListItem>({
                     <>
                         {!shouldUseDefaultRightHandSideCheckmark && !!canSelectMultiple && (
                             <PressableWithFeedback
+                                sentryLabel={CONST.SENTRY_LABEL.SELECTION_LIST_WITH_SECTIONS.BASE_LIST_ITEM}
                                 accessibilityLabel={item.text ?? ''}
                                 role={CONST.ROLE.BUTTON}
                                 // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
@@ -171,6 +172,7 @@ function UserListItem<TItem extends ListItem>({
                         )}
                         {!!shouldUseDefaultRightHandSideCheckmark && !!canSelectMultiple && (
                             <PressableWithFeedback
+                                sentryLabel={CONST.SENTRY_LABEL.SELECTION_LIST_WITH_SECTIONS.BASE_LIST_ITEM}
                                 accessibilityLabel={item.text ?? ''}
                                 role={CONST.ROLE.BUTTON}
                                 // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
