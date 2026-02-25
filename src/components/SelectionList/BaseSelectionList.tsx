@@ -359,7 +359,6 @@ function BaseSelectionList<TItem extends ListItem>({
                 shouldHighlightSelectedItem={shouldHighlightSelectedItem}
                 shouldSyncFocus={!isTextInputFocusedRef.current && hasKeyBeenPressed.current}
                 shouldDisableHoverStyle={shouldDisableHoverStyle}
-                shouldStopMouseLeavePropagation={false}
                 shouldShowRightCaret={shouldShowRightCaret}
             />
         );

@@ -46,7 +46,6 @@ function BaseListItem<TItem extends ListItem>({
     shouldUseDefaultRightHandSideCheckmark = true,
     shouldHighlightSelectedItem = true,
     shouldDisableHoverStyle,
-    shouldStopMouseLeavePropagation = true,
     shouldShowRightCaret = false,
     accessible,
     accessibilityRole = getButtonRole(true),
@@ -62,11 +61,8 @@ function BaseListItem<TItem extends ListItem>({
 
     // Sync focus on an item
     useSyncFocus(pressableRef, !!isFocused, shouldSyncFocus);
-    const handleMouseLeave = (e: React.MouseEvent<Element, MouseEvent>) => {
+    const handleMouseLeave = () => {
         bind.onMouseLeave();
-        if (shouldStopMouseLeavePropagation) {
-            e.stopPropagation();
-        }
         setMouseUp();
     };
 

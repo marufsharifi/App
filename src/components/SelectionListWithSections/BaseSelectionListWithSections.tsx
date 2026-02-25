@@ -696,7 +696,6 @@ function BaseSelectionListWithSections<TItem extends ListItem>({
                     canShowProductTrainingTooltip={canShowProductTrainingTooltipMemo}
                     shouldShowRightCaret={shouldShowRightCaret}
                     shouldDisableHoverStyle={shouldDisableHoverStyle}
-                    shouldStopMouseLeavePropagation={false}
                 />
             </View>
         );

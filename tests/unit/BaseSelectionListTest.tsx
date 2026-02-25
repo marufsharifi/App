@@ -46,22 +46,6 @@ jest.mock('@hooks/useKeyboardShortcut', () => (key: {shortcutKey: string}, callb
     }
 });
 
-let mockShouldStopMouseLeavePropagation = false;
-jest.mock('@components/SelectionList/ListItem/BaseListItem', () => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-    const ActualBaseListItem = jest.requireActual('@components/SelectionList/ListItem/BaseListItem').default;
-
-    return ((props) => (
-        <ActualBaseListItem
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            {...props}
-            shouldStopMouseLeavePropagation={mockShouldStopMouseLeavePropagation}
-        >
-            {props.children}
-        </ActualBaseListItem>
-    )) as typeof BaseListItem;
-});
-
 describe('BaseSelectionList', () => {
     const onSelectRowMock = jest.fn();
 
@@ -121,33 +105,6 @@ describe('BaseSelectionList', () => {
         await waitFor(() => {
             expect(screen.getByTestId(`${CONST.BASE_LIST_ITEM_TEST_ID}0`)).toHaveStyle({backgroundColor: colors.productDark400});
         });
-    });
-
-    it("the stopPropagation from the BaseListItem's mouseLeave event does not trigger if shouldStopMouseLeavePropagation === false", () => {
-        mockShouldStopMouseLeavePropagation = false;
-        render(
-            <BaseListItemRenderer
-                data={mockSections}
-                canSelectMultiple={false}
-            />,
-        );
-
-        const mockStopPropagation = jest.fn();
-        fireEvent(screen.getByTestId(`${CONST.BASE_LIST_ITEM_TEST_ID}3`), 'mouseLeave', {stopPropagation: mockStopPropagation});
-
-        expect(mockStopPropagation).toHaveBeenCalledTimes(0);
-
-        mockShouldStopMouseLeavePropagation = true;
-        render(
-            <BaseListItemRenderer
-                data={mockSections}
-                canSelectMultiple={false}
-            />,
-        );
-
-        fireEvent(screen.getByTestId(`${CONST.BASE_LIST_ITEM_TEST_ID}3`), 'mouseLeave', {stopPropagation: mockStopPropagation});
-
-        expect(mockStopPropagation).toHaveBeenCalledTimes(1);
     });
 
     it('should not call preventDefault on mouseDown when the target is an INPUT element', () => {

@@ -47,7 +47,6 @@ function BaseListItem<TItem extends ListItem>({
     shouldShowRightCaret = false,
     shouldHighlightSelectedItem = true,
     shouldDisableHoverStyle,
-    shouldStopMouseLeavePropagation = true,
     accessibilityRole = getButtonRole(true),
 }: BaseListItemProps<TItem>) {
     const icons = useMemoizedLazyExpensifyIcons(['ArrowRight']);
@@ -61,11 +60,8 @@ function BaseListItem<TItem extends ListItem>({
 
     // Sync focus on an item
     useSyncFocus(pressableRef, !!isFocused, shouldSyncFocus);
-    const handleMouseLeave = (e: React.MouseEvent<Element, MouseEvent>) => {
+    const handleMouseLeave = () => {
         bind.onMouseLeave();
-        if (shouldStopMouseLeavePropagation) {
-            e.stopPropagation();
-        }
         setMouseUp();
     };
 

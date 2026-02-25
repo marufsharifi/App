@@ -277,9 +277,6 @@ type ListItemProps<TItem extends ListItem> = CommonListItemProps<TItem> & {
 
     /** Whether to disable the hover style of the item */
     shouldDisableHoverStyle?: boolean;
-
-    /** Whether to call stopPropagation on the mouseleave event in BaseListItem */
-    shouldStopMouseLeavePropagation?: boolean;
 };
 
 type ValidListItem =
@@ -323,9 +320,6 @@ type BaseListItemProps<TItem extends ListItem> = CommonListItemProps<TItem> & {
 
     /** Whether to disable the hover style of the item */
     shouldDisableHoverStyle?: boolean;
-
-    /** Whether to call stopPropagation on the mouseleave event in BaseListItem */
-    shouldStopMouseLeavePropagation?: boolean;
 
     /**
      * Whether the pressable should be accessible as a single element.
