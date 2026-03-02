@@ -6,8 +6,8 @@ import FormHelpMessage from '@components/FormHelpMessage';
 import HeaderWithBackButton from '@components/HeaderWithBackButton';
 import MagicCodeInput from '@components/MagicCodeInput';
 import type {MagicCodeInputHandle} from '@components/MagicCodeInput';
-import {DefaultCancelConfirmModal} from '@components/MultifactorAuthentication/components/Modals';
 import {useMultifactorAuthentication, useMultifactorAuthenticationActions, useMultifactorAuthenticationState} from '@components/MultifactorAuthentication/Context';
+import MultifactorAuthenticationTriggerCancelConfirmModal from '@components/MultifactorAuthentication/TriggerCancelConfirmModal';
 import MultifactorAuthenticationValidateCodeResendButton from '@components/MultifactorAuthentication/ValidateCodeResendButton';
 import type {MultifactorAuthenticationValidateCodeResendButtonHandle} from '@components/MultifactorAuthentication/ValidateCodeResendButton';
 import ScreenWrapper from '@components/ScreenWrapper';
@@ -204,8 +204,6 @@ function MultifactorAuthenticationValidateCodePage() {
         return false;
     };
 
-    const CancelConfirmModal = state.scenario?.modals.cancelConfirmation ?? DefaultCancelConfirmModal;
-
     return (
         <ScreenWrapper
             testID={MultifactorAuthenticationValidateCodePage.displayName}
@@ -255,7 +253,8 @@ function MultifactorAuthenticationValidateCodePage() {
                     isLoading={isValidateCodeFormSubmitting}
                     isDisabled={isOffline}
                 />
-                <CancelConfirmModal
+                <MultifactorAuthenticationTriggerCancelConfirmModal
+                    scenario={state.scenario}
                     isVisible={isCancelModalVisible}
                     onConfirm={cancelFlow}
                     onCancel={hideCancelModal}

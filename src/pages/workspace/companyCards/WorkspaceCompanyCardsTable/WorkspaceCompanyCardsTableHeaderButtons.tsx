@@ -52,7 +52,8 @@ function WorkspaceCompanyCardsTableHeaderButtons({policyID, feedName, isLoading,
     const {translate} = useLocalize();
     const {currencyList} = useCurrencyListState();
     const theme = useTheme();
-    const icons = useMemoizedLazyExpensifyIcons(['Gear', 'DotIndicator']);
+    const icons = useMemoizedLazyExpensifyIcons(['Gear']);
+    const expensifyIcons = useMemoizedLazyExpensifyIcons(['DotIndicator']);
 
     const [cardFeeds] = useCardFeeds(policyID);
     const policy = usePolicy(policyID);
@@ -170,7 +171,7 @@ function WorkspaceCompanyCardsTableHeaderButtons({policyID, feedName, isLoading,
             {!isLoading && (isFeedConnectionBroken || hasFeedErrors) && (
                 <View style={[styles.flexRow, styles.ph5, styles.alignItemsCenter]}>
                     <Icon
-                        src={icons.DotIndicator}
+                        src={expensifyIcons.DotIndicator}
                         fill={theme.danger}
                         additionalStyles={styles.mr1}
                     />

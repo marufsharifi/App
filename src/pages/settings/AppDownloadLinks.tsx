@@ -2,6 +2,8 @@ import React, {useRef} from 'react';
 import type {View} from 'react-native';
 import expensifyLogo from '@assets/images/expensify-logo-round-transparent.png';
 import HeaderWithBackButton from '@components/HeaderWithBackButton';
+// eslint-disable-next-line no-restricted-imports
+import * as Expensicons from '@components/Icon/Expensicons';
 import MenuItem from '@components/MenuItem';
 import type {MenuItemProps} from '@components/MenuItem';
 import QRShare from '@components/QRShare';
@@ -23,7 +25,7 @@ type DownloadMenuItem = MenuItemProps & {
 };
 
 function AppDownloadLinksPage() {
-    const icons = useMemoizedLazyExpensifyIcons(['Android', 'Apple', 'Monitor', 'NewWindow'] as const);
+    const icons = useMemoizedLazyExpensifyIcons(['Monitor', 'NewWindow']);
     const styles = useThemeStyles();
     const {translate} = useLocalize();
     const popoverAnchor = useRef<View>(null);
@@ -35,7 +37,7 @@ function AppDownloadLinksPage() {
                 openExternalLink(CONST.APP_DOWNLOAD_LINKS.ANDROID);
             },
             link: CONST.APP_DOWNLOAD_LINKS.ANDROID,
-            icon: icons.Android,
+            icon: Expensicons.Android,
             iconRight: icons.NewWindow,
         },
         {
@@ -44,7 +46,7 @@ function AppDownloadLinksPage() {
                 openExternalLink(CONST.APP_DOWNLOAD_LINKS.IOS, true);
             },
             link: CONST.APP_DOWNLOAD_LINKS.IOS,
-            icon: icons.Apple,
+            icon: Expensicons.Apple,
             iconRight: icons.NewWindow,
         },
     ];

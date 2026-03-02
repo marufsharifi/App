@@ -356,7 +356,7 @@ describe('SidebarUtils', () => {
                 lastActionReport: undefined,
                 isReportArchived: undefined,
                 currentUserAccountID: 0,
-
+                chatReport: undefined,
                 reportAttributesDerived: undefined,
             });
             const optionDataUnpinned = SidebarUtils.getOptionData({
@@ -376,7 +376,7 @@ describe('SidebarUtils', () => {
                 lastActionReport: undefined,
                 isReportArchived: undefined,
                 currentUserAccountID: 0,
-
+                chatReport: undefined,
                 reportAttributesDerived: undefined,
             });
 
@@ -528,183 +528,6 @@ describe('SidebarUtils', () => {
             expect(Object.values(reportErrors)).toContain('The deposit and withdrawal accounts are the same.');
 
             await Onyx.clear();
-        });
-    });
-
-    describe('shouldDisplayReportInLHN', () => {
-        it('returns shouldDisplay as true if a one transaction thread expense report has receipt upload error', async () => {
-            const MOCK_REPORT: Report = {
-                reportID: '1',
-                ownerAccountID: 12345,
-                chatType: CONST.REPORT.CHAT_TYPE.POLICY_EXPENSE_CHAT,
-                stateNum: CONST.REPORT.STATE_NUM.OPEN,
-                statusNum: CONST.REPORT.STATUS_NUM.OPEN,
-                policyID: '6',
-                type: CONST.REPORT.TYPE.EXPENSE,
-            };
-
-            const MOCK_REPORTS: ReportCollectionDataSet = {
-                [`${ONYXKEYS.COLLECTION.REPORT}${MOCK_REPORT.reportID}` as const]: MOCK_REPORT,
-            };
-
-            const MOCK_REPORT_ACTIONS: ReportActions = {
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                '1': {
-                    reportActionID: '1',
-                    actionName: CONST.REPORT.ACTIONS.TYPE.IOU,
-                    originalMessage: {
-                        IOUTransactionID: '1',
-                        type: 'create',
-                    },
-                    message: [{type: 'COMMENT', html: '10.00 expense', text: '10.00 expense'}],
-                    actorAccountID: 12345,
-                    created: '2024-08-08 18:20:44.171',
-                },
-            };
-
-            const MOCK_TRANSACTION: Transaction = {
-                transactionID: '1',
-                amount: 10,
-                modifiedAmount: 10,
-                reportID: MOCK_REPORT.reportID,
-                errors: {
-                    '1772030710775000': {
-                        error: CONST.IOU.RECEIPT_ERROR,
-                        source: '',
-                        filename: 'download.jpeg',
-                        action: 'replaceReceipt',
-                        retryParams: {transactionID: '', source: '', transactionPolicy: undefined},
-                    },
-                },
-                created: '2024-08-08 18:20:44.171',
-                currency: 'USD',
-                merchant: 'merchant',
-            };
-
-            const MOCK_TRANSACTIONS = {
-                [`${ONYXKEYS.COLLECTION.TRANSACTION}${MOCK_TRANSACTION.transactionID}` as const]: MOCK_TRANSACTION,
-            } as OnyxCollection<Transaction>;
-
-            await act(async () => {
-                await Onyx.multiSet({
-                    ...MOCK_REPORTS,
-                    [`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${MOCK_REPORT.reportID}` as const]: MOCK_REPORT_ACTIONS,
-                    [`${ONYXKEYS.COLLECTION.TRANSACTION}${MOCK_TRANSACTION.transactionID}` as const]: MOCK_TRANSACTION,
-                });
-            });
-
-            const result = SidebarUtils.shouldDisplayReportInLHN(MOCK_REPORT, MOCK_REPORTS as OnyxCollection<Report>, undefined, true, undefined, {}, undefined, MOCK_TRANSACTIONS);
-
-            expect(result).toStrictEqual({shouldDisplay: true, hasErrorsOtherThanFailedReceipt: true});
-        });
-
-        it('returns shouldDisplay as true if transaction thread report has receipt upload error', async () => {
-            const MOCK_REPORT: Report = {
-                reportID: '1',
-                ownerAccountID: 12345,
-                chatType: CONST.REPORT.CHAT_TYPE.POLICY_EXPENSE_CHAT,
-                stateNum: CONST.REPORT.STATE_NUM.OPEN,
-                statusNum: CONST.REPORT.STATUS_NUM.OPEN,
-                policyID: '6',
-                type: CONST.REPORT.TYPE.EXPENSE,
-            };
-
-            const MOCK_TRANSACTION_THREAD_REPORT: Report = {
-                reportID: '2',
-                ownerAccountID: 12345,
-                chatType: CONST.REPORT.CHAT_TYPE.POLICY_EXPENSE_CHAT,
-                policyID: '6',
-                parentReportID: MOCK_REPORT.reportID,
-                parentReportActionID: '1',
-                type: CONST.REPORT.TYPE.CHAT,
-            };
-
-            const MOCK_REPORTS: ReportCollectionDataSet = {
-                [`${ONYXKEYS.COLLECTION.REPORT}${MOCK_REPORT.reportID}` as const]: MOCK_REPORT,
-                [`${ONYXKEYS.COLLECTION.REPORT}${MOCK_TRANSACTION_THREAD_REPORT.reportID}` as const]: MOCK_TRANSACTION_THREAD_REPORT,
-            };
-
-            const MOCK_REPORT_ACTIONS: ReportActions = {
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                '1': {
-                    reportActionID: '1',
-                    actionName: CONST.REPORT.ACTIONS.TYPE.IOU,
-                    originalMessage: {
-                        IOUTransactionID: '1',
-                        type: 'create',
-                    },
-                    message: [{type: 'COMMENT', html: '10.00 expense', text: '10.00 expense'}],
-                    actorAccountID: 12345,
-                    created: '2024-08-08 18:20:44.171',
-                },
-                '2': {
-                    reportActionID: '2',
-                    actionName: CONST.REPORT.ACTIONS.TYPE.IOU,
-                    originalMessage: {
-                        IOUTransactionID: '2',
-                        type: 'create',
-                    },
-                    message: [{type: 'COMMENT', html: '10.00 expense', text: '10.00 expense'}],
-                    actorAccountID: 12345,
-                    created: '2024-08-08 18:20:44.171',
-                },
-            };
-
-            const MOCK_TRANSACTION: Transaction = {
-                transactionID: '1',
-                amount: 10,
-                modifiedAmount: 10,
-                reportID: MOCK_REPORT.reportID,
-                errors: {
-                    '1772030710775000': {
-                        error: CONST.IOU.RECEIPT_ERROR,
-                        source: '',
-                        filename: 'download.jpeg',
-                        action: 'replaceReceipt',
-                        retryParams: {transactionID: '', source: '', transactionPolicy: undefined},
-                    },
-                },
-                created: '2024-08-08 18:20:44.171',
-                currency: 'USD',
-                merchant: 'merchant',
-            };
-
-            const MOCK_TRANSACTION2: Transaction = {
-                transactionID: '2',
-                amount: 10,
-                modifiedAmount: 10,
-                reportID: MOCK_REPORT.reportID,
-                created: '2024-08-08 18:20:44.171',
-                currency: 'USD',
-                merchant: 'merchant',
-            };
-
-            const MOCK_TRANSACTIONS = {
-                [`${ONYXKEYS.COLLECTION.TRANSACTION}${MOCK_TRANSACTION.transactionID}` as const]: MOCK_TRANSACTION,
-                [`${ONYXKEYS.COLLECTION.TRANSACTION}${MOCK_TRANSACTION2.transactionID}` as const]: MOCK_TRANSACTION2,
-            } as OnyxCollection<Transaction>;
-
-            await act(async () => {
-                await Onyx.multiSet({
-                    ...MOCK_REPORTS,
-                    [`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${MOCK_REPORT.reportID}` as const]: MOCK_REPORT_ACTIONS,
-                    [`${ONYXKEYS.COLLECTION.TRANSACTION}${MOCK_TRANSACTION.transactionID}` as const]: MOCK_TRANSACTION,
-                    [`${ONYXKEYS.COLLECTION.TRANSACTION}${MOCK_TRANSACTION2.transactionID}` as const]: MOCK_TRANSACTION2,
-                });
-            });
-
-            const result = SidebarUtils.shouldDisplayReportInLHN(
-                MOCK_TRANSACTION_THREAD_REPORT,
-                MOCK_REPORTS as OnyxCollection<Report>,
-                undefined,
-                true,
-                undefined,
-                {},
-                undefined,
-                MOCK_TRANSACTIONS,
-            );
-
-            expect(result).toStrictEqual({shouldDisplay: true, hasErrorsOtherThanFailedReceipt: true});
         });
     });
 
@@ -1522,7 +1345,7 @@ describe('SidebarUtils', () => {
                 lastActionReport: undefined,
                 isReportArchived: undefined,
                 currentUserAccountID: 0,
-
+                chatReport: undefined,
                 reportAttributesDerived: undefined,
             });
 
@@ -1588,7 +1411,7 @@ describe('SidebarUtils', () => {
                 lastActionReport: undefined,
                 isReportArchived: undefined,
                 currentUserAccountID: 0,
-
+                chatReport: undefined,
                 reportAttributesDerived: undefined,
             });
 
@@ -1629,7 +1452,7 @@ describe('SidebarUtils', () => {
                 lastActionReport: undefined,
                 isReportArchived: undefined,
                 currentUserAccountID: 0,
-
+                chatReport: undefined,
                 reportAttributesDerived: undefined,
             });
 
@@ -1669,7 +1492,7 @@ describe('SidebarUtils', () => {
                 lastActionReport: undefined,
                 isReportArchived: undefined,
                 currentUserAccountID: 0,
-
+                chatReport: undefined,
                 reportAttributesDerived: undefined,
             });
 
@@ -1709,7 +1532,7 @@ describe('SidebarUtils', () => {
                 lastActionReport: undefined,
                 isReportArchived: undefined,
                 currentUserAccountID: 0,
-
+                chatReport: undefined,
                 reportAttributesDerived: undefined,
             });
 
@@ -1777,7 +1600,7 @@ describe('SidebarUtils', () => {
                 lastActionReport: undefined,
                 isReportArchived: undefined,
                 currentUserAccountID: 0,
-
+                chatReport: undefined,
                 reportAttributesDerived: undefined,
             });
 
@@ -1831,6 +1654,7 @@ describe('SidebarUtils', () => {
                     lastActionReport: undefined,
                     isReportArchived: undefined,
                     currentUserAccountID: 0,
+                    chatReport: undefined,
                 });
 
                 expect(optionData?.alternateText).toBe(`test message`);
@@ -1874,7 +1698,7 @@ describe('SidebarUtils', () => {
                     isReportArchived: true,
                     lastActionReport: undefined,
                     currentUserAccountID: 0,
-
+                    chatReport: undefined,
                     reportAttributesDerived: undefined,
                 });
 
@@ -1916,6 +1740,7 @@ describe('SidebarUtils', () => {
                     lastActionReport: undefined,
                     isReportArchived: undefined,
                     currentUserAccountID: 0,
+                    chatReport: undefined,
                 });
 
                 expect(optionData?.alternateText).toBe(`test message`);
@@ -2055,7 +1880,7 @@ describe('SidebarUtils', () => {
                     lastActionReport: undefined,
                     isReportArchived: undefined,
                     currentUserAccountID: 0,
-
+                    chatReport: undefined,
                     reportAttributesDerived: mockReportAttributesDerived,
                 });
 
@@ -2102,6 +1927,7 @@ describe('SidebarUtils', () => {
                     lastActionReport: undefined,
                     isReportArchived: undefined,
                     currentUserAccountID: 0,
+                    chatReport: undefined,
                 });
 
                 expect(optionData?.alternateText).toBe(`${policy.name} ${CONST.DOT_SEPARATOR} test message`);
@@ -2176,6 +2002,7 @@ describe('SidebarUtils', () => {
                     lastActionReport: undefined,
                     isReportArchived: undefined,
                     currentUserAccountID: session.accountID,
+                    chatReport: undefined,
                 });
 
                 // Then the alternate text should be equal to the message of the last action prepended with the last actor display name.
@@ -2239,6 +2066,7 @@ describe('SidebarUtils', () => {
                     lastActionReport: undefined,
                     isReportArchived: undefined,
                     currentUserAccountID: session.accountID,
+                    chatReport: undefined,
                 });
 
                 expect(result?.alternateText).toBe(`You: moved this report to the Three's Workspace workspace`);
@@ -2293,6 +2121,7 @@ describe('SidebarUtils', () => {
                     isReportArchived: undefined,
                     lastMessageTextFromReport: report.lastMessageText,
                     currentUserAccountID: session.accountID,
+                    chatReport: undefined,
                 });
 
                 expect(result?.alternateText).toBe('You: someMessage');
@@ -2328,7 +2157,6 @@ describe('SidebarUtils', () => {
 
                 const lastAction: ReportAction = {
                     ...createRandomReportAction(1),
-                    reportID: iouReportR14932.reportID,
                     message: [
                         {
                             type: 'COMMENT',
@@ -2352,16 +2180,8 @@ describe('SidebarUtils', () => {
                     await Onyx.set(`${ONYXKEYS.COLLECTION.REPORT}${iouReportR14932.reportID}`, iouReportR14932);
                     await Onyx.set(`${ONYXKEYS.COLLECTION.REPORT}${chatReportR14932.reportID}`, chatReportR14932);
                     await Onyx.set(`${ONYXKEYS.COLLECTION.REPORT}${report.reportID}`, report);
-                    await Onyx.set(`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${iouReportR14932.reportID}`, {
-                        [linkedCreateAction.reportActionID]: linkedCreateAction,
-                        [lastAction.reportActionID]: lastAction,
-                    });
-                    await Onyx.set(ONYXKEYS.DERIVED.VISIBLE_REPORT_ACTIONS, {
-                        [iouReportR14932.reportID]: {
-                            [linkedCreateAction.reportActionID]: true,
-                            [lastAction.reportActionID]: true,
-                        },
-                    });
+                    await Onyx.set(`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${report.reportID}`, {[lastAction.reportActionID]: lastAction});
+                    await Onyx.set(`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${iouReportR14932.reportID}`, {[linkedCreateAction.reportActionID]: linkedCreateAction});
                 });
 
                 const result = SidebarUtils.getOptionData({
@@ -2381,12 +2201,7 @@ describe('SidebarUtils', () => {
                     lastActionReport: undefined,
                     isReportArchived: undefined,
                     currentUserAccountID: session.accountID,
-                    visibleReportActionsData: {
-                        [iouReportR14932.reportID]: {
-                            [linkedCreateAction.reportActionID]: true,
-                            [lastAction.reportActionID]: true,
-                        },
-                    },
+                    chatReport: undefined,
                 });
 
                 expect(result?.alternateText).toBe(`You: ${getReportActionMessageText(lastAction)}`);
@@ -2407,7 +2222,6 @@ describe('SidebarUtils', () => {
                 };
                 const lastAction: ReportAction = {
                     ...createRandomReportAction(1),
-                    reportID: '1',
                     message: [
                         {
                             type: 'COMMENT',
@@ -2427,7 +2241,6 @@ describe('SidebarUtils', () => {
                 };
                 const deletedAction: ReportAction = {
                     ...createRandomReportAction(2),
-                    reportID: '1',
                     actionName: 'IOU',
                     actorAccountID: 20337430,
                     automatic: false,
@@ -2509,8 +2322,8 @@ describe('SidebarUtils', () => {
                     lastAction,
                     lastActionReport: undefined,
                     isReportArchived: undefined,
-                    lastMessageTextFromReport: 'test action',
                     currentUserAccountID: 0,
+                    chatReport: undefined,
                 });
 
                 expect(result?.alternateText).toContain(`${getReportActionMessageText(lastAction)}`);
@@ -2599,6 +2412,7 @@ describe('SidebarUtils', () => {
                     lastActionReport: undefined,
                     isReportArchived: undefined,
                     currentUserAccountID: 0,
+                    chatReport: undefined,
                 });
 
                 expect(result?.alternateText).toBe(`One: submitted`);
@@ -2699,6 +2513,7 @@ describe('SidebarUtils', () => {
                     lastActionReport: undefined,
                     isReportArchived: undefined,
                     currentUserAccountID: managerID,
+                    chatReport: undefined,
                 });
 
                 const reportPreviewMessage = getReportPreviewMessage(iouReport, iouAction, true, true, null, true, lastReportPreviewAction);
@@ -2800,6 +2615,7 @@ describe('SidebarUtils', () => {
                     lastActionReport: undefined,
                     isReportArchived: undefined,
                     currentUserAccountID: managerID,
+                    chatReport: undefined,
                 });
 
                 const reportPreviewMessage = getReportPreviewMessage(iouReport, iouAction, true, true, null, true, lastReportPreviewAction);
@@ -2833,6 +2649,7 @@ describe('SidebarUtils', () => {
                     invoiceReceiverPolicy: undefined,
                     isReportArchived: undefined,
                     currentUserAccountID: 0,
+                    chatReport: undefined,
                 });
 
                 // Then isConciergeChat should be true
@@ -2864,6 +2681,7 @@ describe('SidebarUtils', () => {
                     invoiceReceiverPolicy: undefined,
                     isReportArchived: undefined,
                     currentUserAccountID: 0,
+                    chatReport: undefined,
                 });
 
                 // Then isConciergeChat should be false
@@ -2894,6 +2712,7 @@ describe('SidebarUtils', () => {
                     invoiceReceiverPolicy: undefined,
                     isReportArchived: undefined,
                     currentUserAccountID: 0,
+                    chatReport: undefined,
                 });
 
                 // Then isConciergeChat should be false

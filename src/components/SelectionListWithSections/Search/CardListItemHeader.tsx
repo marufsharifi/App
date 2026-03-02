@@ -78,11 +78,7 @@ function CardListItemHeader<TItem extends ListItem>({
                 style={StyleUtils.getReportTableColumnStyles(CONST.SEARCH.TABLE_COLUMNS.CARD)}
             >
                 <View style={[styles.gapHalf, styles.flexShrink1]}>
-                    <TextWithTooltip
-                        text={cardItem.formattedCardName ?? ''}
-                        numberOfLines={2}
-                        style={[styles.preWrap]}
-                    />
+                    <TextWithTooltip text={cardItem.formattedCardName ?? ''} />
                 </View>
             </View>
         ),
@@ -93,8 +89,7 @@ function CardListItemHeader<TItem extends ListItem>({
             >
                 <TextWithTooltip
                     text={cardItem.formattedFeedName ?? ''}
-                    numberOfLines={2}
-                    style={[styles.lineHeightLarge, styles.preWrap]}
+                    style={[styles.optionDisplayName, styles.lineHeightLarge, styles.pre]}
                 />
             </View>
         ),
@@ -148,8 +143,7 @@ function CardListItemHeader<TItem extends ListItem>({
                                 />
                                 <TextWithTooltip
                                     text={cardItem.formattedCardName ?? ''}
-                                    numberOfLines={2}
-                                    style={[styles.textLabelSupporting, styles.lh16, styles.preWrap]}
+                                    style={[styles.textLabelSupporting, styles.lh16, styles.pre]}
                                 />
                             </View>
                         </View>

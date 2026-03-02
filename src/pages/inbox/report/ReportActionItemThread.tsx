@@ -37,22 +37,9 @@ type ReportActionItemThreadProps = {
 
     /** The function that should be called when the thread is LongPressed or right-clicked */
     onSecondaryInteraction: (event: GestureResponderEvent | MouseEvent) => void;
-
-    /** The accountID of the current user, used for creating optimistic report if needed */
-    currentUserAccountID: number;
 };
 
-function ReportActionItemThread({
-    numberOfReplies,
-    accountIDs,
-    mostRecentReply,
-    report,
-    reportAction,
-    isHovered,
-    onSecondaryInteraction,
-    isActive,
-    currentUserAccountID,
-}: ReportActionItemThreadProps) {
+function ReportActionItemThread({numberOfReplies, accountIDs, mostRecentReply, report, reportAction, isHovered, onSecondaryInteraction, isActive}: ReportActionItemThreadProps) {
     const styles = useThemeStyles();
 
     const {translate, datetimeToCalendarTime} = useLocalize();
@@ -67,7 +54,7 @@ function ReportActionItemThread({
         <View style={[styles.chatItemMessage]}>
             <PressableWithSecondaryInteraction
                 onPress={() => {
-                    navigateToAndOpenChildReport(childReport, reportAction, report, currentUserAccountID);
+                    navigateToAndOpenChildReport(childReport, reportAction, report);
                 }}
                 role={CONST.ROLE.BUTTON}
                 accessibilityLabel={`${numberOfReplies} ${replyText}`}

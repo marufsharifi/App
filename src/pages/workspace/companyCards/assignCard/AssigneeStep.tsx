@@ -14,7 +14,7 @@ import usePolicy from '@hooks/usePolicy';
 import useSearchSelector from '@hooks/useSearchSelector';
 import useThemeStyles from '@hooks/useThemeStyles';
 import {setDraftInviteAccountID} from '@libs/actions/Card';
-import {searchUserInServer} from '@libs/actions/Report';
+import {searchInServer} from '@libs/actions/Report';
 import {getCardAssignmentDateOption, getCardAssignmentStartDate, getDefaultCardName} from '@libs/CardUtils';
 import type {PlatformStackScreenProps} from '@libs/Navigation/PlatformStackNavigation/types';
 import type {SettingsNavigatorParamList} from '@libs/Navigation/types';
@@ -201,7 +201,7 @@ function AssigneeStep({route}: AssigneeStepProps) {
     }
 
     useEffect(() => {
-        searchUserInServer(debouncedSearchTerm);
+        searchInServer(debouncedSearchTerm);
     }, [debouncedSearchTerm]);
 
     const searchValue = debouncedSearchTerm.trim().toLowerCase();

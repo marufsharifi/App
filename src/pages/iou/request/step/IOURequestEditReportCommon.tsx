@@ -64,7 +64,7 @@ function IOURequestEditReportCommon({
     createReport,
     isPerDiemRequest,
 }: Props) {
-    const icons = useMemoizedLazyExpensifyIcons(['Close', 'Document'] as const);
+    const icons = useMemoizedLazyExpensifyIcons(['Close', 'Document']);
     const {translate, localeCompare} = useLocalize();
     const personalDetails = usePersonalDetails();
     const [allPolicies] = useOnyx(ONYXKEYS.COLLECTION.POLICY);
@@ -308,7 +308,7 @@ function IOURequestEditReportCommon({
                 isVisible={perDiemWarningModalVisible}
                 onConfirm={hidePerDiemWarningModal}
                 onCancel={hidePerDiemWarningModal}
-                title={translate('iou.moveExpenses')}
+                title={translate('iou.moveExpenses', {count: transactionIDs?.length ?? 1})}
                 prompt={translate('iou.moveExpensesError')}
                 confirmText={translate('common.buttonConfirm')}
                 shouldShowCancelButton={false}

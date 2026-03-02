@@ -1,5 +1,5 @@
 import type {OnyxCollection, OnyxEntry, ResultMetadata} from 'react-native-onyx';
-import {filterAmexDirectParentCard, getCompanyCardFeed, getCompanyFeeds, getSelectedFeed, normalizeCardName} from '@libs/CardUtils';
+import {getCompanyCardFeed, getCompanyFeeds, getSelectedFeed, normalizeCardName} from '@libs/CardUtils';
 import CONST from '@src/CONST';
 import ONYXKEYS from '@src/ONYXKEYS';
 import type {CardFeeds, CardList} from '@src/types/onyx';
@@ -85,12 +85,7 @@ function resolveCardListEntry(card: Card, cardListEntries: Array<[string, string
  * Builds a list of card entries by starting from assignedCards (source of truth for assignments),
  * then filling in remaining unassigned cards from accountList/cardList.
  */
-function buildCompanyCardEntries(
-    accountList: string[] | undefined,
-    cardList: AssignableCardsList | undefined,
-    assignedCards: CardList,
-    feedName?: CompanyCardFeedWithDomainID,
-): CompanyCardEntry[] {
+function buildCompanyCardEntries(accountList: string[] | undefined, cardList: AssignableCardsList | undefined, assignedCards: CardList): CompanyCardEntry[] {
     const entries: CompanyCardEntry[] = [];
     const coveredNames = new Set<string>();
     const coveredEncrypted = new Set<string>();
@@ -98,7 +93,6 @@ function buildCompanyCardEntries(
     const cardListEntries = Object.entries(cardList ?? {});
 
     // Phase 1: Assigned cards first — these are the source of truth.
-    // Previously assigned parent cards are kept visible so admins can manage/unassign them.
     for (const card of Object.values(assignedCards)) {
         if (!card?.cardName) {
             continue;
@@ -124,7 +118,7 @@ function buildCompanyCardEntries(
         coveredEncrypted.add(encryptedCardNumber);
     }
 
-    for (const name of filterAmexDirectParentCard(accountList ?? [], feedName)) {
+    for (const name of accountList ?? []) {
         if (coveredNames.has(normalizeCardName(name))) {
             continue;
         }
@@ -152,7 +146,7 @@ function useCompanyCards({policyID, feedName: feedNameProp}: UseCompanyCardsProp
     const selectedFeed = feedName && companyCardFeeds[feedName];
 
     const {cardList, ...assignedCards} = cardsList ?? {};
-    const companyCardEntries = buildCompanyCardEntries(selectedFeed?.accountList, cardList, assignedCards, feedName);
+    const companyCardEntries = buildCompanyCardEntries(selectedFeed?.accountList, cardList, assignedCards);
 
     const onyxMetadata = {
         cardListMetadata,

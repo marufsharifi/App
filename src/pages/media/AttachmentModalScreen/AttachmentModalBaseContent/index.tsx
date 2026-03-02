@@ -67,9 +67,6 @@ function AttachmentModalBaseContent({
     onCarouselAttachmentChange = () => {},
     transaction: transactionProp,
     shouldCloseOnSwipeDown = false,
-    footerActionButtons,
-    customAttachmentContent,
-    attachmentViewContainerStyles,
 }: AttachmentModalBaseContentProps) {
     const styles = useThemeStyles();
     const {shouldUseNarrowLayout} = useResponsiveLayout();
@@ -329,7 +326,7 @@ function AttachmentModalBaseContent({
                 shouldOverlayDots
                 subTitleLink={currentAttachmentLink ?? ''}
             />
-            <View style={[styles.imageModalImageCenterContainer, attachmentViewContainerStyles]}>
+            <View style={styles.imageModalImageCenterContainer}>
                 {isLoading && <FullScreenLoadingIndicator testID="attachment-loading-spinner" />}
                 {shouldShowNotFoundPage && !isLoading && (
                     <BlockingView
@@ -342,18 +339,8 @@ function AttachmentModalBaseContent({
                         onLinkPress={onClose}
                     />
                 )}
-                {shouldDisplayContent && (customAttachmentContent ?? Content)}
+                {shouldDisplayContent && Content}
             </View>
-            {!!footerActionButtons && (
-                <LayoutAnimationConfig skipEntering>
-                    <Animated.View
-                        style={bottomSafeAreaPaddingStyle}
-                        entering={FadeIn}
-                    >
-                        {footerActionButtons}
-                    </Animated.View>
-                </LayoutAnimationConfig>
-            )}
             {/* If we have an onConfirm method show a confirmation button */}
             {!!onConfirm && !isConfirmButtonDisabled && (
                 <LayoutAnimationConfig skipEntering>

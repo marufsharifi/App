@@ -1,11 +1,10 @@
-import React, {useCallback, useContext, useEffect} from 'react';
+import React, {useCallback, useContext, useEffect, useMemo} from 'react';
 import {useSharedValue} from 'react-native-reanimated';
 import type ChildrenProps from '@src/types/utils/ChildrenProps';
 import {usePlaybackStateContext} from './PlaybackContext';
-import type {VolumeActionsContextType, VolumeStateContextType} from './types';
+import type {VolumeContext} from './types';
 
-const VolumeStateContext = React.createContext<VolumeStateContextType | null>(null);
-const VolumeActionsContext = React.createContext<VolumeActionsContextType | null>(null);
+const Context = React.createContext<VolumeContext | null>(null);
 
 function VolumeContextProvider({children}: ChildrenProps) {
     const {currentVideoPlayerRef, originalParent} = usePlaybackStateContext();
@@ -27,7 +26,7 @@ function VolumeContextProvider({children}: ChildrenProps) {
     );
 
     // This function ensures mute and unmute functionality. Overwriting lastNonZeroValue
-    // only in the case of mute guarantees that a pan gesture reducing the volume to zero won't cause
+    // only in the case of mute guarantees that a pan gesture reducing the volume to zero won’t cause
     // us to lose this value. As a result, unmute restores the last non-zero value.
     const toggleMute = useCallback(() => {
         if (volume.get() !== 0) {
@@ -45,36 +44,25 @@ function VolumeContextProvider({children}: ChildrenProps) {
         updateVolume(volume.get());
     }, [originalParent, updateVolume, volume]);
 
-    const stateValue = {volume, lastNonZeroVolume};
-    const actionsValue = {updateVolume, toggleMute};
-
-    return (
-        <VolumeStateContext.Provider value={stateValue}>
-            <VolumeActionsContext.Provider value={actionsValue}>{children}</VolumeActionsContext.Provider>
-        </VolumeStateContext.Provider>
+    const contextValue = useMemo(
+        () => ({
+            updateVolume,
+            volume,
+            lastNonZeroVolume,
+            toggleMute,
+        }),
+        [updateVolume, volume, lastNonZeroVolume, toggleMute],
     );
-}
 
-function useVolumeState() {
-    const context = useContext(VolumeStateContext);
-    if (!context) {
-        throw new Error('useVolumeState must be used within a VolumeContextProvider');
-    }
-    return context;
-}
-
-function useVolumeActions() {
-    const context = useContext(VolumeActionsContext);
-    if (!context) {
-        throw new Error('useVolumeActions must be used within a VolumeContextProvider');
-    }
-    return context;
+    return <Context.Provider value={contextValue}>{children}</Context.Provider>;
 }
 
 function useVolumeContext() {
-    const state = useVolumeState();
-    const actions = useVolumeActions();
-    return {...state, ...actions};
+    const volumeContext = useContext(Context);
+    if (!volumeContext) {
+        throw new Error('useVolumeContext must be used within a VolumeContextProvider');
+    }
+    return volumeContext;
 }
 
-export {VolumeContextProvider, useVolumeContext, useVolumeState, useVolumeActions};
+export {VolumeContextProvider, useVolumeContext};

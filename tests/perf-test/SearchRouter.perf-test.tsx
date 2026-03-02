@@ -5,7 +5,7 @@ import Onyx from 'react-native-onyx';
 import {measureRenders} from 'reassure';
 import {LocaleContextProvider} from '@components/LocaleContextProvider';
 import OnyxListItemProvider from '@components/OnyxListItemProvider';
-import {OptionsListActionsContext, OptionsListStateContext} from '@components/OptionListContextProvider';
+import {OptionsListContext} from '@components/OptionListContextProvider';
 import SearchAutocompleteInput from '@components/Search/SearchAutocompleteInput';
 import SearchRouter from '@components/Search/SearchRouter/SearchRouter';
 import type {PrivateIsArchivedMap} from '@hooks/usePrivateIsArchivedMap';
@@ -48,16 +48,6 @@ jest.mock('@src/hooks/useRootNavigationState', () => ({
     // eslint-disable-next-line @typescript-eslint/naming-convention
     __esModule: true,
     default: () => ({contextualReportID: undefined, isSearchRouterScreen: false}),
-}));
-
-jest.mock('@hooks/useExportedToFilterOptions', () => ({
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    __esModule: true,
-    default: () => ({
-        exportedToFilterOptions: [],
-        combinedUniqueExportTemplates: [],
-        connectedIntegrationNames: new Set<string>(),
-    }),
 }));
 
 jest.mock('@react-navigation/native', () => {
@@ -147,11 +137,9 @@ function SearchAutocompleteInputWrapper() {
 function SearchRouterWrapperWithCachedOptions() {
     return (
         <ComposeProviders components={[OnyxListItemProvider, LocaleContextProvider]}>
-            <OptionsListStateContext.Provider value={useMemo(() => ({options: mockedOptions, areOptionsInitialized: true}), [])}>
-                <OptionsListActionsContext.Provider value={useMemo(() => ({initializeOptions: () => {}, resetOptions: () => {}}), [])}>
-                    <SearchRouter onRouterClose={mockOnClose} />
-                </OptionsListActionsContext.Provider>
-            </OptionsListStateContext.Provider>
+            <OptionsListContext.Provider value={useMemo(() => ({options: mockedOptions, initializeOptions: () => {}, resetOptions: () => {}, areOptionsInitialized: true}), [])}>
+                <SearchRouter onRouterClose={mockOnClose} />
+            </OptionsListContext.Provider>
         </ComposeProviders>
     );
 }

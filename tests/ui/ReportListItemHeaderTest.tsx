@@ -5,8 +5,7 @@ import type {ValueOf} from 'type-fest';
 import ComposeProviders from '@components/ComposeProviders';
 import {LocaleContextProvider} from '@components/LocaleContextProvider';
 import OnyxListItemProvider from '@components/OnyxListItemProvider';
-import {SearchActionsContext, SearchStateContext} from '@components/Search/SearchContext';
-import type {SearchActionsContextValue, SearchStateContextValue} from '@components/Search/types';
+import {SearchContext} from '@components/Search/SearchContext';
 import ReportListItemHeader from '@components/SelectionListWithSections/Search/ReportListItemHeader';
 import type {TransactionReportGroupListItemType} from '@components/SelectionListWithSections/types';
 import CONST from '@src/CONST';
@@ -19,26 +18,24 @@ jest.mock('@components/ConfirmedRoute.tsx');
 jest.mock('@libs/Navigation/Navigation');
 jest.mock('@components/AvatarWithDisplayName.tsx');
 
-// Mock search context with all required SearchContextStateValue and SearchContextActionsValue fields
-const mockSearchStateContext = {
+// Mock search context
+const mockSearchContext = {
     currentSearchHash: 12345,
     currentRecentSearchHash: 12345,
-    selectedReports: [],
+    selectedReports: {},
     selectedTransactionIDs: [],
     selectedTransactions: {},
     isOnSearch: false,
     shouldTurnOffSelectionMode: false,
-} satisfies Partial<SearchStateContextValue>;
-
-const mockSearchActionsContext = {
+    setSelectedReports: jest.fn(),
     clearSelectedTransactions: jest.fn(),
     setLastSearchType: jest.fn(),
     setCurrentSearchHashAndKey: jest.fn(),
     setSelectedTransactions: jest.fn(),
     setShouldShowFiltersBarLoading: jest.fn(),
-    setShouldShowSelectAllMatchingItems: jest.fn(),
+    shouldShowSelectAllMatchingItems: jest.fn(),
     selectAllMatchingItems: jest.fn(),
-} satisfies Partial<SearchActionsContextValue>;
+};
 
 const mockPersonalDetails: Record<string, PersonalDetails> = {
     john: {
@@ -100,18 +97,15 @@ const renderReportListItemHeader = (reportItem: TransactionReportGroupListItemTy
     return render(
         <ComposeProviders components={[OnyxListItemProvider, LocaleContextProvider]}>
             {/* @ts-expect-error - Disable TypeScript errors to simplify the test */}
-            <SearchStateContext.Provider value={mockSearchStateContext}>
-                {/* @ts-expect-error - Disable TypeScript errors to simplify the test */}
-                <SearchActionsContext.Provider value={mockSearchActionsContext}>
-                    <ReportListItemHeader
-                        report={reportItem}
-                        onSelectRow={jest.fn()}
-                        onCheckboxPress={jest.fn()}
-                        isDisabled={false}
-                        canSelectMultiple={false}
-                    />
-                </SearchActionsContext.Provider>
-            </SearchStateContext.Provider>
+            <SearchContext.Provider value={mockSearchContext}>
+                <ReportListItemHeader
+                    report={reportItem}
+                    onSelectRow={jest.fn()}
+                    onCheckboxPress={jest.fn()}
+                    isDisabled={false}
+                    canSelectMultiple={false}
+                />
+            </SearchContext.Provider>
         </ComposeProviders>,
     );
 };

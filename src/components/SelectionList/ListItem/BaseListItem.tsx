@@ -2,11 +2,13 @@ import React, {useRef} from 'react';
 import {View} from 'react-native';
 import {getButtonRole} from '@components/Button/utils';
 import Icon from '@components/Icon';
+// eslint-disable-next-line no-restricted-imports
+import * as Expensicons from '@components/Icon/Expensicons';
 import OfflineWithFeedback from '@components/OfflineWithFeedback';
 import PressableWithFeedback from '@components/Pressable/PressableWithFeedback';
 import useHover from '@hooks/useHover';
 import {useMemoizedLazyExpensifyIcons} from '@hooks/useLazyAsset';
-import {useMouseActions, useMouseState} from '@hooks/useMouseContext';
+import {useMouseContext} from '@hooks/useMouseContext';
 import useStyleUtils from '@hooks/useStyleUtils';
 import useSyncFocus from '@hooks/useSyncFocus';
 import useTheme from '@hooks/useTheme';
@@ -52,17 +54,15 @@ function BaseListItem<TItem extends ListItem>({
     const styles = useThemeStyles();
     const StyleUtils = useStyleUtils();
     const {hovered, bind} = useHover();
-    const {isMouseDownOnInput} = useMouseState();
-    const {setMouseUp} = useMouseActions();
-    const icons = useMemoizedLazyExpensifyIcons(['ArrowRight', 'Checkmark', 'DotIndicator'] as const);
+    const {isMouseDownOnInput, setMouseUp} = useMouseContext();
+    const icons = useMemoizedLazyExpensifyIcons(['ArrowRight']);
 
     const pressableRef = useRef<View>(null);
 
     // Sync focus on an item
     useSyncFocus(pressableRef, !!isFocused, shouldSyncFocus);
-    const handleMouseLeave = (e: React.MouseEvent<Element, MouseEvent>) => {
+    const handleMouseLeave = () => {
         bind.onMouseLeave();
-        e.stopPropagation();
         setMouseUp();
     };
 
@@ -159,7 +159,7 @@ function BaseListItem<TItem extends ListItem>({
                         <View style={[styles.alignItemsCenter, styles.justifyContentCenter, styles.ml3]}>
                             <Icon
                                 testID={CONST.DOT_INDICATOR_TEST_ID}
-                                src={icons.DotIndicator}
+                                src={Expensicons.DotIndicator}
                                 fill={item.brickRoadIndicator === CONST.BRICK_ROAD_INDICATOR_STATUS.INFO ? theme.iconSuccessFill : theme.danger}
                             />
                         </View>
@@ -172,7 +172,7 @@ function BaseListItem<TItem extends ListItem>({
                         >
                             <View>
                                 <Icon
-                                    src={icons.Checkmark}
+                                    src={Expensicons.Checkmark}
                                     fill={theme.success}
                                 />
                             </View>

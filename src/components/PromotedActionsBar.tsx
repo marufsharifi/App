@@ -67,7 +67,7 @@ const PromotedActions = {
 
             // The accountID might be optimistic, so we should use the login if we have it
             if (login) {
-                navigateToAndOpenReport([login], currentUserAccountID, false);
+                navigateToAndOpenReport([login], false);
                 return;
             }
             if (accountID) {

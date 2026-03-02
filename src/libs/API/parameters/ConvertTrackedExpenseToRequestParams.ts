@@ -13,10 +13,6 @@ type ConvertTrackedExpenseToRequestParams = {
     moneyRequestCreatedReportActionID: string | undefined;
     moneyRequestPreviewReportActionID: string;
     reportPreviewReportActionID: string;
-    isDistance?: boolean;
-    customUnitRateID?: string;
-    waypoints?: string;
-    distance?: number;
 };
 
 export default ConvertTrackedExpenseToRequestParams;

@@ -3,7 +3,7 @@ import {InteractionManager} from 'react-native';
 import type {OnyxCollection, OnyxEntry, OnyxUpdate} from 'react-native-onyx';
 import Onyx from 'react-native-onyx';
 import type {ValueOf} from 'type-fest';
-import type {SearchActionsContextValue, SearchStateContextValue} from '@components/Search/types';
+import type {SearchContextProps} from '@components/Search/types';
 import * as API from '@libs/API';
 import type {CompleteSplitBillParams, RevertSplitTransactionParams, SplitBillParams, SplitTransactionParams, SplitTransactionSplitsParam, StartSplitBillParams} from '@libs/API/parameters';
 import {WRITE_COMMANDS} from '@libs/API/types';
@@ -103,7 +103,7 @@ type UpdateSplitTransactionsParams = {
         splitExpenses: SplitExpense[];
         splitExpensesTotal?: number;
     };
-    searchContext?: Partial<SearchStateContextValue & SearchActionsContextValue>;
+    searchContext?: Partial<SearchContextProps>;
     policyCategories: OnyxTypes.PolicyCategories | undefined;
     policy: OnyxTypes.Policy | undefined;
     policyRecentlyUsedCategories: OnyxTypes.RecentlyUsedCategories | undefined;
@@ -1559,7 +1559,6 @@ function updateSplitTransactions({
         const parameters = {
             ...splits.at(0),
             comment: splits.at(0)?.comment?.comment,
-            waypoints: splits.at(0)?.waypoints ? JSON.stringify(splits.at(0)?.waypoints) : undefined,
         } as RevertSplitTransactionParams;
         API.write(WRITE_COMMANDS.REVERT_SPLIT_TRANSACTION, parameters, onyxData);
     } else {
@@ -1864,13 +1863,13 @@ function setIndividualShare(transactionID: string, participantAccountID: number,
 /**
  * Calculate merchant for distance transactions based on distance and rate
  */
-function getDistanceMerchantFromDistance(distanceInUnits: number, unit: Unit | undefined, rate: number | undefined, currency: string): string {
+function getDistanceMerchantFromDistance(distanceInUnits: number, unit: Unit | undefined, rate: number | undefined, currency: string, transactionCurrency?: string): string {
     if (!rate || rate <= 0 || !unit) {
         return '';
     }
 
     const distanceInMeters = DistanceRequestUtils.convertToDistanceInMeters(distanceInUnits, unit);
-    const currencyForMerchant = currency;
+    const currencyForMerchant = currency ?? transactionCurrency ?? CONST.CURRENCY.USD;
     const currentLocale = IntlStore.getCurrentLocale();
     return DistanceRequestUtils.getDistanceMerchant(
         true,
@@ -1881,7 +1880,6 @@ function getDistanceMerchantFromDistance(distanceInUnits: number, unit: Unit | u
         (phrase, ...parameters) => Localize.translate(currentLocale, phrase, ...parameters),
         (digit) => toLocaleDigit(currentLocale, digit),
         getCurrencySymbol,
-        true,
     );
 }
 
@@ -1911,7 +1909,7 @@ function updateSplitExpenseDistanceFromAmount(
         quantity,
     };
 
-    const merchant = getDistanceMerchantFromDistance(distanceInUnits, unit, rate, transactionCurrency ?? mileageRate?.currency ?? CONST.CURRENCY.USD);
+    const merchant = getDistanceMerchantFromDistance(distanceInUnits, unit, rate, mileageRate?.currency ?? transactionCurrency ?? CONST.CURRENCY.USD, transactionCurrency);
 
     return {customUnit, merchant};
 }
@@ -1980,7 +1978,8 @@ function initDraftSplitExpenseDataForEdit(draftTransaction: OnyxEntry<OnyxTypes.
             reportID,
             created: splitTransactionData?.created ?? '',
             category: splitTransactionData?.category ?? '',
-            customUnit: splitTransactionData?.customUnit,
+            distance: splitTransactionData?.customUnit?.quantity ?? undefined,
+            customUnitRateID: splitTransactionData?.customUnit?.customUnitRateID,
             waypoints: splitTransactionData?.waypoints ?? undefined,
             odometerStart: splitTransactionData?.odometerStart ?? undefined,
             odometerEnd: splitTransactionData?.odometerEnd ?? undefined,
@@ -2339,8 +2338,8 @@ function updateSplitExpenseField(
                         updatedItem.amount = calculatedAmount;
 
                         // Update merchant for distance transactions
-                        const currency = originalTransaction.currency ?? mileageRate?.currency ?? CONST.CURRENCY.USD;
-                        updatedItem.merchant = getDistanceMerchantFromDistance(distanceInUnits, unit, rate, currency);
+                        const currency = mileageRate?.currency ?? originalTransaction.currency ?? CONST.CURRENCY.USD;
+                        updatedItem.merchant = getDistanceMerchantFromDistance(distanceInUnits, unit, rate, currency, originalTransaction.currency);
                     }
                 }
             }

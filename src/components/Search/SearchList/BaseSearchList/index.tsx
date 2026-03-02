@@ -124,7 +124,7 @@ function BaseSearchList({
             onViewableItemsChanged={onViewableItemsChanged}
             onLayout={onLayout}
             removeClippedSubviews
-            drawDistance={250}
+            drawDistance={1000}
             contentContainerStyle={contentContainerStyle}
             maintainVisibleContentPosition={{disabled: true}}
         />

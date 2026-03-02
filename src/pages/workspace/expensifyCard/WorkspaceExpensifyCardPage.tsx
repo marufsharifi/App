@@ -36,10 +36,10 @@ function WorkspaceExpensifyCardPage({route}: WorkspaceExpensifyCardPageProps) {
     }, [fetchExpensifyCards]);
 
     const paymentBankAccountID = cardSettings?.paymentBankAccountID ?? CONST.DEFAULT_NUMBER_ID;
-    const isLoading = !isOffline && (!cardSettings || cardSettings.isLoading) && !cardSettings?.hasOnceLoaded;
+    const isLoading = !isOffline && (!cardSettings || cardSettings.isLoading);
 
     const renderContent = () => {
-        if (isLoading) {
+        if (!!isLoading && !paymentBankAccountID) {
             return <FullScreenLoadingIndicator shouldUseGoBackButton />;
         }
         if (paymentBankAccountID) {
@@ -51,7 +51,7 @@ function WorkspaceExpensifyCardPage({route}: WorkspaceExpensifyCardPageProps) {
                 />
             );
         }
-        if (!paymentBankAccountID) {
+        if (!paymentBankAccountID && !isLoading) {
             return <WorkspaceExpensifyCardPageEmptyState route={route} />;
         }
     };

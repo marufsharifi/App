@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
+import * as Expensicons from '@components/Icon/Expensicons';
 import PopoverMenu from '@components/PopoverMenu';
-import {useMemoizedLazyExpensifyIcons} from '@hooks/useLazyAsset';
 import useLocalize from '@hooks/useLocalize';
 import useOnyx from '@hooks/useOnyx';
 import useResponsiveLayout from '@hooks/useResponsiveLayout';
@@ -29,14 +29,13 @@ function ConnectToNetSuiteFlow({policyID}: ConnectToNetSuiteFlowProps) {
     const {popoverAnchorRefs} = useAccountingContext();
 
     const [policy] = useOnyx(`${ONYXKEYS.COLLECTION.POLICY}${policyID}`);
-    const icons = useMemoizedLazyExpensifyIcons(['Copy', 'LinkCopy'] as const);
     const shouldGoToCredentialsPage = isAuthenticationError(policy, CONST.POLICY.CONNECTIONS.NAME.NETSUITE);
 
     const threeDotsMenuContainerRef = popoverAnchorRefs?.current?.[CONST.POLICY.CONNECTIONS.NAME.NETSUITE];
 
     const connectionOptions = [
         {
-            icon: icons.LinkCopy,
+            icon: Expensicons.LinkCopy,
             text: translate('workspace.common.createNewConnection'),
             onSelected: () => {
                 Navigation.navigate(ROUTES.POLICY_ACCOUNTING_NETSUITE_TOKEN_INPUT.getRoute(policyID, getInitialSubPageForNetsuiteTokenInput(policy)));
@@ -44,7 +43,7 @@ function ConnectToNetSuiteFlow({policyID}: ConnectToNetSuiteFlowProps) {
             },
         },
         {
-            icon: icons.Copy,
+            icon: Expensicons.Copy,
             text: translate('workspace.common.reuseExistingConnection'),
             onSelected: () => {
                 Navigation.navigate(ROUTES.POLICY_ACCOUNTING_NETSUITE_EXISTING_CONNECTIONS.getRoute(policyID));

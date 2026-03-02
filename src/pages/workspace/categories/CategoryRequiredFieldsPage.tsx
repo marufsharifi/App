@@ -65,13 +65,7 @@ function CategoryRequiredFieldsPage({
                     <OfflineWithFeedback pendingAction={policyCategory?.pendingFields?.areCommentsRequired}>
                         <View style={[styles.mt2, styles.mh5]}>
                             <View style={[styles.flexRow, styles.mb5, styles.mr2, styles.alignItemsCenter, styles.justifyContentBetween]}>
-                                <Text
-                                    style={[styles.flexShrink1, styles.mr2]}
-                                    accessible={false}
-                                    aria-hidden
-                                >
-                                    {translate('workspace.rules.categoryRules.requireDescription')}
-                                </Text>
+                                <Text style={[styles.flexShrink1, styles.mr2]}>{translate('workspace.rules.categoryRules.requireDescription')}</Text>
                                 <Switch
                                     isOn={areCommentsRequired}
                                     accessibilityLabel={translate('workspace.rules.categoryRules.requireDescription')}
@@ -86,13 +80,7 @@ function CategoryRequiredFieldsPage({
                         <OfflineWithFeedback pendingAction={policyCategory?.pendingFields?.areAttendeesRequired}>
                             <View style={[styles.mh5]}>
                                 <View style={[styles.flexRow, styles.mv5, styles.mr2, styles.alignItemsCenter, styles.justifyContentBetween]}>
-                                    <Text
-                                        style={[styles.flexShrink1, styles.mr2]}
-                                        accessible={false}
-                                        aria-hidden
-                                    >
-                                        {translate('workspace.rules.categoryRules.requireAttendees')}
-                                    </Text>
+                                    <Text style={[styles.flexShrink1, styles.mr2]}>{translate('workspace.rules.categoryRules.requireAttendees')}</Text>
                                     <Switch
                                         isOn={areAttendeesRequired}
                                         accessibilityLabel={translate('workspace.rules.categoryRules.requireAttendees')}

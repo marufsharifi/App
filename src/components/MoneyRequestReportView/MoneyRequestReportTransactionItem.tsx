@@ -59,9 +59,6 @@ type MoneyRequestReportTransactionItemProps = {
 
     /** Callback function that navigates to the transaction thread */
     onArrowRightPress?: (transactionID: string) => void;
-
-    /** Whether this transaction should be highlighted as newly added */
-    shouldBeHighlighted: boolean;
 };
 
 function MoneyRequestReportTransactionItem({
@@ -78,7 +75,6 @@ function MoneyRequestReportTransactionItem({
     taxAmountColumnSize,
     scrollToNewTransaction,
     onArrowRightPress,
-    shouldBeHighlighted,
 }: MoneyRequestReportTransactionItemProps) {
     const {translate} = useLocalize();
     const styles = useThemeStyles();
@@ -95,17 +91,17 @@ function MoneyRequestReportTransactionItem({
 
     // This useEffect scrolls to this transaction when it is newly added to the report
     useEffect(() => {
-        if (!shouldBeHighlighted || !scrollToNewTransaction) {
+        if (!transaction.shouldBeHighlighted || !scrollToNewTransaction) {
             return;
         }
         viewRef?.current?.measure((x, y, width, height, pageX, pageY) => {
             scrollToNewTransaction?.(pageY);
         });
-    }, [scrollToNewTransaction, shouldBeHighlighted]);
+    }, [scrollToNewTransaction, transaction.shouldBeHighlighted]);
 
     const animatedHighlightStyle = useAnimatedHighlightStyle({
         borderRadius: variables.componentBorderRadius,
-        shouldHighlight: shouldBeHighlighted,
+        shouldHighlight: transaction.shouldBeHighlighted ?? false,
         highlightColor: theme.messageHighlightBG,
         backgroundColor: theme.highlightBG,
     });

@@ -195,7 +195,6 @@ function WorkspaceReportFieldsPage({
                     title={translate('common.reports')}
                     shouldUseHeadlineHeader
                     shouldShowBackButton={shouldUseNarrowLayout}
-                    shouldDisplayHelpButton
                     onBackButtonPress={Navigation.goBack}
                 />
                 {isLoading && (

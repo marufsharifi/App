@@ -1,7 +1,7 @@
-import {fireEvent, render, renderHook, screen} from '@testing-library/react-native';
+import {fireEvent, render, screen} from '@testing-library/react-native';
 import React from 'react';
 import ButtonWithDropdownMenu from '@components/ButtonWithDropdownMenu';
-import {useMemoizedLazyExpensifyIcons} from '@hooks/useLazyAsset';
+import * as Expensicons from '@components/Icon/Expensicons';
 import CONST from '@src/CONST';
 
 describe('ButtonWithDropdownMenu (single option)', () => {
@@ -9,11 +9,10 @@ describe('ButtonWithDropdownMenu (single option)', () => {
     const mockOnOptionSelected = jest.fn();
     const mockOnSubItemSelected = jest.fn();
     const mockOnPress = jest.fn();
-    const {result: icons} = renderHook(() => useMemoizedLazyExpensifyIcons(['Checkbox']));
     const option = {
         value: 'test',
         text: 'Test Option',
-        icon: icons.current.Checkbox,
+        icon: Expensicons.Checkbox,
         onSelected: mockOnSelected,
     };
 

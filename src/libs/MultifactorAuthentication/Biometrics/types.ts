@@ -2,7 +2,6 @@
  * Type definitions for multifactor authentication biometrics operations.
  */
 import type {ValueOf} from 'type-fest';
-import type {MultifactorAuthenticationScenario, MultifactorAuthenticationScenarioAdditionalParams} from '@components/MultifactorAuthentication/config/types';
 import type {SignedChallenge} from './ED25519/types';
 import type {SECURE_STORE_VALUES} from './SecureStore';
 import type VALUES from './VALUES';
@@ -113,11 +112,7 @@ type MultifactorAuthenticationCallbackInput = {
  * Called after the API call completes (success or failure).
  * Returns a response that determines whether to show the outcome screen.
  */
-type MultifactorAuthenticationScenarioCallback = (
-    isSuccessful: boolean,
-    callbackInput: MultifactorAuthenticationCallbackInput,
-    payload: MultifactorAuthenticationScenarioAdditionalParams<MultifactorAuthenticationScenario> | undefined,
-) => Promise<MultifactorAuthenticationCallbackResponse>;
+type MultifactorAuthenticationScenarioCallback = (isSuccessful: boolean, callbackInput: MultifactorAuthenticationCallbackInput) => Promise<MultifactorAuthenticationCallbackResponse>;
 
 export type {
     MultifactorAuthenticationResponseMap,

@@ -66,12 +66,7 @@ function SamlLoginSectionContent({accountID, domainName, isSamlEnabled, isSamlRe
             >
                 <View style={styles.sectionMenuItemTopDescription}>
                     <View style={[styles.flexRow, styles.justifyContentBetween, styles.alignItemsCenter, styles.gap3, styles.pv1]}>
-                        <Text
-                            accessible={false}
-                            aria-hidden
-                        >
-                            {translate('domain.samlLogin.enableSamlLogin')}
-                        </Text>
+                        <Text>{translate('domain.samlLogin.enableSamlLogin')}</Text>
 
                         <Switch
                             accessibilityLabel={translate('domain.samlLogin.enableSamlLogin')}
@@ -100,12 +95,7 @@ function SamlLoginSectionContent({accountID, domainName, isSamlEnabled, isSamlRe
                 >
                     <View style={styles.sectionMenuItemTopDescription}>
                         <View style={[styles.flexRow, styles.justifyContentBetween, styles.alignItemsCenter, styles.gap3, styles.pv1]}>
-                            <Text
-                                accessible={false}
-                                aria-hidden
-                            >
-                                {translate('domain.samlLogin.requireSamlLogin')}
-                            </Text>
+                            <Text>{translate('domain.samlLogin.requireSamlLogin')}</Text>
                             <Switch
                                 accessibilityLabel={translate('domain.samlLogin.requireSamlLogin')}
                                 isOn={isSamlRequired}

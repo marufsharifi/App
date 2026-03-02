@@ -69,7 +69,7 @@ function HeaderWithBackButton({
     shouldOverlayDots = false,
     shouldOverlay = false,
     shouldNavigateToTopMostReport = false,
-    shouldDisplayHelpButton = false,
+    shouldDisplayHelpButton = true,
     shouldDisplaySearchRouter = false,
     progressBarPercentage,
     style,
@@ -344,8 +344,8 @@ function HeaderWithBackButton({
                         </Tooltip>
                     )}
                 </View>
-                {shouldDisplaySearchRouter && <SearchButton />}
                 {shouldDisplayHelpButton && <SidePanelButton />}
+                {shouldDisplaySearchRouter && <SearchButton />}
             </View>
         </View>
     );

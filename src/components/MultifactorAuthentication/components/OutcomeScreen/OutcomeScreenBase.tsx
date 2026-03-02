@@ -6,14 +6,11 @@ import Button from '@components/Button';
 import HeaderWithBackButton from '@components/HeaderWithBackButton';
 import {loadIllustration} from '@components/Icon/IllustrationLoader';
 import type {IllustrationName} from '@components/Icon/IllustrationLoader';
-import RenderHTML from '@components/RenderHTML';
 import ScreenWrapper from '@components/ScreenWrapper';
-import Text from '@components/Text';
 import {useMemoizedLazyAsset} from '@hooks/useLazyAsset';
 import useLocalize from '@hooks/useLocalize';
 import useThemeStyles from '@hooks/useThemeStyles';
 import Navigation from '@libs/Navigation/Navigation';
-import Parser from '@libs/Parser';
 
 type OutcomeScreenBaseProps = {
     headerTitle: string;
@@ -26,24 +23,6 @@ type OutcomeScreenBaseProps = {
     padding?: ViewStyle;
 };
 
-function HTMLSubtitle({htmlString = '', style}: {htmlString?: string; style?: ViewStyle}) {
-    const styles = useThemeStyles();
-
-    // RenderHTML expands vertically beyond its content height. We render
-    // invisible Text to establish natural height, then overlay RenderHTML
-    // absolutely positioned to support HTML features (links, formatting).
-    return (
-        <View>
-            <View style={[styles.opacity0, style]}>
-                <Text style={[styles.textAlignCenter]}>{Parser.htmlToText(htmlString)}</Text>
-            </View>
-            <View style={[styles.pAbsolute, style]}>
-                <RenderHTML html={`<centered-text><muted-text>${htmlString}</muted-text></centered-text>`} />
-            </View>
-        </View>
-    );
-}
-
 function OutcomeScreenBase({headerTitle, illustration, iconWidth, iconHeight, title, subtitle, customSubtitle, padding}: OutcomeScreenBaseProps) {
     const {translate} = useLocalize();
     const styles = useThemeStyles();
@@ -52,13 +31,6 @@ function OutcomeScreenBase({headerTitle, illustration, iconWidth, iconHeight, ti
     const onClose = () => {
         Navigation.closeRHPFlow();
     };
-
-    const CustomSubtitle = customSubtitle ?? (
-        <HTMLSubtitle
-            htmlString={subtitle}
-            style={styles.ph5}
-        />
-    );
 
     return (
         <ScreenWrapper testID={OutcomeScreenBase.displayName}>
@@ -75,7 +47,9 @@ function OutcomeScreenBase({headerTitle, illustration, iconWidth, iconHeight, ti
                     iconHeight={iconHeight}
                     title={title}
                     titleStyles={styles.mb2}
-                    CustomSubtitle={CustomSubtitle}
+                    subtitle={subtitle}
+                    CustomSubtitle={customSubtitle}
+                    subtitleStyle={styles.textSupporting}
                     containerStyle={[styles.ph5, padding]}
                     testID={OutcomeScreenBase.displayName}
                 />

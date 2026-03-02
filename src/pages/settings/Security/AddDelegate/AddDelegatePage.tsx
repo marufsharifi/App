@@ -9,7 +9,7 @@ import useLocalize from '@hooks/useLocalize';
 import useOnyx from '@hooks/useOnyx';
 import useSearchSelector from '@hooks/useSearchSelector';
 import useThemeStyles from '@hooks/useThemeStyles';
-import {searchUserInServer} from '@libs/actions/Report';
+import {searchInServer} from '@libs/actions/Report';
 import Navigation from '@libs/Navigation/Navigation';
 import {getHeaderMessage} from '@libs/OptionsListUtils';
 import CONST from '@src/CONST';
@@ -32,7 +32,7 @@ function AddDelegatePage() {
             {} as Record<string, boolean>,
         ) ?? {};
 
-    const {searchTerm, debouncedSearchTerm, setSearchTerm, availableOptions, areOptionsInitialized, toggleSelection, onListEndReached} = useSearchSelector({
+    const {searchTerm, debouncedSearchTerm, setSearchTerm, availableOptions, areOptionsInitialized, toggleSelection} = useSearchSelector({
         selectionMode: CONST.SEARCH_SELECTOR.SELECTION_MODE_SINGLE,
         searchContext: CONST.SEARCH_SELECTOR.SEARCH_CONTEXT_GENERAL,
         includeUserToInvite: true,
@@ -85,7 +85,7 @@ function AddDelegatePage() {
     }));
 
     useEffect(() => {
-        searchUserInServer(debouncedSearchTerm);
+        searchInServer(debouncedSearchTerm);
     }, [debouncedSearchTerm]);
 
     return (
@@ -113,7 +113,6 @@ function AddDelegatePage() {
                         showLoadingPlaceholder={!areOptionsInitialized}
                         isLoadingNewOptions={!!isSearchingForReports}
                         shouldShowTextInput
-                        onEndReached={onListEndReached}
                     />
                 </View>
             </DelegateNoAccessWrapper>

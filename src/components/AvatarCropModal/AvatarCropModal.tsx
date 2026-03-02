@@ -10,6 +10,7 @@ import ActivityIndicator from '@components/ActivityIndicator';
 import Button from '@components/Button';
 import HeaderWithBackButton from '@components/HeaderWithBackButton';
 import Icon from '@components/Icon';
+import * as Expensicons from '@components/Icon/Expensicons';
 import Modal from '@components/Modal';
 import PressableWithoutFeedback from '@components/Pressable/PressableWithoutFeedback';
 import ScreenWrapper from '@components/ScreenWrapper';
@@ -59,7 +60,7 @@ function AvatarCropModal({imageUri = '', imageName = '', imageType = '', onClose
     const theme = useTheme();
     const styles = useThemeStyles();
     const StyleUtils = useStyleUtils();
-    const expensifyIcons = useMemoizedLazyExpensifyIcons(['Rotate', 'Zoom'] as const);
+    const expensifyIcons = useMemoizedLazyExpensifyIcons(['Zoom']);
 
     const originalImageWidth = useSharedValue<number>(CONST.AVATAR_CROP_MODAL.INITIAL_SIZE);
     const originalImageHeight = useSharedValue<number>(CONST.AVATAR_CROP_MODAL.INITIAL_SIZE);
@@ -432,7 +433,7 @@ function AvatarCropModal({imageUri = '', imageName = '', imageType = '', onClose
                                     >
                                         <View>
                                             <Button
-                                                icon={expensifyIcons.Rotate}
+                                                icon={Expensicons.Rotate}
                                                 iconFill={theme.icon}
                                                 onPress={rotateImage}
                                             />

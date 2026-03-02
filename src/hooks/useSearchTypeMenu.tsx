@@ -3,7 +3,7 @@ import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import type {OnyxCollection} from 'react-native-onyx';
 import {usePersonalDetails} from '@components/OnyxListItemProvider';
 import type {PopoverMenuItem} from '@components/PopoverMenu';
-import {useSearchActionsContext} from '@components/Search/SearchContext';
+import {useSearchContext} from '@components/Search/SearchContext';
 import type {SearchQueryJSON} from '@components/Search/types';
 import ThreeDotsMenu from '@components/ThreeDotsMenu';
 import {setSearchContext} from '@libs/actions/Search';
@@ -41,7 +41,7 @@ export default function useSearchTypeMenu(queryJSON: SearchQueryJSON) {
     const {windowHeight} = useWindowDimensions();
     const {translate} = useLocalize();
     const {typeMenuSections, shouldShowSuggestedSearchSkeleton} = useSearchTypeMenuSections();
-    const {clearSelectedTransactions} = useSearchActionsContext();
+    const {clearSelectedTransactions} = useSearchContext();
     const {showDeleteModal} = useDeleteSavedSearch();
     const [allPolicies] = useOnyx(ONYXKEYS.COLLECTION.POLICY);
     const personalDetails = usePersonalDetails();
@@ -63,7 +63,6 @@ export default function useSearchTypeMenu(queryJSON: SearchQueryJSON) {
         'CreditCard',
         'MoneyHourglass',
         'CreditCardHourglass',
-        'ExpensifyCard',
         'Bank',
         'User',
         'Folder',

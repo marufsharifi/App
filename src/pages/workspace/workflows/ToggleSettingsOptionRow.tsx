@@ -121,9 +121,6 @@ function ToggleSettingOptionRow({
     const styles = useThemeStyles();
     const {isAccordionExpanded, shouldAnimateAccordionSection} = useAccordionAnimation(isActive);
 
-    // We are disabling the announcement for subtitle if subtitle and switchAccessibilityLabel are equal
-    const areSubtitleAndSwitchAccessibilityLabelEqual = switchAccessibilityLabel === subtitle;
-
     useEffect(() => {
         isAccordionExpanded.set(isActive);
     }, [isAccordionExpanded, isActive]);
@@ -154,19 +151,7 @@ function ToggleSettingOptionRow({
                     </View>
                 );
             }
-            /**
-             * We hide the subtitle from screen readers to avoid double announcements
-             * 'aria-hidden' is used for compatibility with iOS mWeb, while 'accessible={false}' works on iOS native.
-             */
-            return (
-                <Text
-                    accessible={!areSubtitleAndSwitchAccessibilityLabelEqual}
-                    aria-hidden={areSubtitleAndSwitchAccessibilityLabelEqual}
-                    style={[styles.mutedNormalTextLabel, shouldPlaceSubtitleBelowSwitch ? styles.mt1 : {...styles.mt1, ...styles.mr5}, subtitleStyle]}
-                >
-                    {subtitle}
-                </Text>
-            );
+            return <Text style={[styles.mutedNormalTextLabel, shouldPlaceSubtitleBelowSwitch ? styles.mt1 : {...styles.mt1, ...styles.mr5}, subtitleStyle]}>{subtitle}</Text>;
         }
 
         return subtitle;
@@ -181,7 +166,6 @@ function ToggleSettingOptionRow({
         shouldPlaceSubtitleBelowSwitch,
         subtitleStyle,
         processedSubtitle,
-        areSubtitleAndSwitchAccessibilityLabelEqual,
     ]);
 
     const contentArea = (
@@ -214,9 +198,7 @@ function ToggleSettingOptionRow({
     const switchComponent = (
         <Switch
             disabledAction={disabledAction}
-            accessibilityLabel={
-                typeof subtitle === 'string' && subtitle && !areSubtitleAndSwitchAccessibilityLabelEqual ? `${switchAccessibilityLabel}, ${subtitle}` : switchAccessibilityLabel
-            }
+            accessibilityLabel={typeof subtitle === 'string' && subtitle ? `${switchAccessibilityLabel}, ${subtitle}` : switchAccessibilityLabel}
             onToggle={(isOn) => {
                 shouldAnimateAccordionSection.set(true);
                 onToggle(isOn);

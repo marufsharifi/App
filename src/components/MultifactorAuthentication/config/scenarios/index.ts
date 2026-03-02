@@ -1,8 +1,6 @@
 import type {EmptyObject} from 'type-fest';
 import type {MultifactorAuthenticationScenarioConfigRecord} from '@components/MultifactorAuthentication/config/types';
 import CONST from '@src/CONST';
-import type {Payload as AuthorizeTransactionPayload} from './AuthorizeTransaction';
-import AuthorizeTransaction from './AuthorizeTransaction';
 import BiometricsTest from './BiometricsTest';
 import {customConfig} from './DefaultUserInterface';
 
@@ -17,17 +15,13 @@ import {customConfig} from './DefaultUserInterface';
  *     }
  * }
  */
-type Payloads = {
-    [CONST.MULTIFACTOR_AUTHENTICATION.SCENARIO.BIOMETRICS_TEST]: EmptyObject;
-    [CONST.MULTIFACTOR_AUTHENTICATION.SCENARIO.AUTHORIZE_TRANSACTION]: AuthorizeTransactionPayload;
-};
+type Payloads = EmptyObject;
 
 /**
  * Configuration records for all multifactor authentication scenarios.
  */
 const Configs = {
     [CONST.MULTIFACTOR_AUTHENTICATION.SCENARIO.BIOMETRICS_TEST]: customConfig(BiometricsTest),
-    [CONST.MULTIFACTOR_AUTHENTICATION.SCENARIO.AUTHORIZE_TRANSACTION]: customConfig(AuthorizeTransaction),
 } as const satisfies MultifactorAuthenticationScenarioConfigRecord;
 
 export default Configs;

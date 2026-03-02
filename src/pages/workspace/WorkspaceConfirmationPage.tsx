@@ -1,4 +1,3 @@
-import {hasSeenTourSelector} from '@selectors/Onboarding';
 import React from 'react';
 import ScreenWrapper from '@components/ScreenWrapper';
 import WorkspaceConfirmationForm from '@components/WorkspaceConfirmationForm';
@@ -23,8 +22,6 @@ function WorkspaceConfirmationPage() {
     const [lastPaymentMethod] = useOnyx(ONYXKEYS.NVP_LAST_PAYMENT_METHOD);
     const [activePolicyID] = useOnyx(ONYXKEYS.NVP_ACTIVE_POLICY_ID);
     const [introSelected] = useOnyx(ONYXKEYS.NVP_INTRO_SELECTED);
-    const [isSelfTourViewed] = useOnyx(ONYXKEYS.NVP_ONBOARDING, {selector: hasSeenTourSelector});
-
     const currentUserPersonalDetails = useCurrentUserPersonalDetails();
     const privateSubscription = usePrivateSubscription();
     const onSubmit = (params: WorkspaceConfirmationSubmitFunctionParams) => {
@@ -32,10 +29,10 @@ function WorkspaceConfirmationPage() {
         const routeToNavigate = isSmallScreenWidth ? ROUTES.WORKSPACE_INITIAL.getRoute(policyID) : ROUTES.WORKSPACE_OVERVIEW.getRoute(policyID);
         createWorkspaceWithPolicyDraftAndNavigateToIt({
             introSelected,
-            policyOwnerEmail: params.owner,
+            policyOwnerEmail: '',
             policyName: params.name,
             transitionFromOldDot: false,
-            makeMeAdmin: params.makeMeAdmin,
+            makeMeAdmin: false,
             backTo: '',
             policyID,
             currency: params.currency,
@@ -46,8 +43,6 @@ function WorkspaceConfirmationPage() {
             currentUserAccountIDParam: currentUserPersonalDetails.accountID,
             currentUserEmailParam: currentUserPersonalDetails.email ?? '',
             shouldCreateControlPolicy: isSubscriptionTypeOfInvoicing(privateSubscription?.type),
-            type: params.planType,
-            isSelfTourViewed,
         });
     };
     const currentUrl = getCurrentUrl();

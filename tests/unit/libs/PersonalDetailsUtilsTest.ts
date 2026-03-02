@@ -1,7 +1,6 @@
 import Onyx from 'react-native-onyx';
 import {
     arePersonalDetailsMissing,
-    areTravelPersonalDetailsMissing,
     createDisplayName,
     createPersonalDetailsLookupByAccountID,
     getAccountIDsByLogins,
@@ -466,54 +465,6 @@ describe('PersonalDetailsUtils', () => {
             ['undefined', undefined],
         ] as const)('should return true when %s', (_description, details) => {
             expect(arePersonalDetailsMissing(details as PrivatePersonalDetails)).toBe(true);
-        });
-    });
-
-    describe('areTravelPersonalDetailsMissing', () => {
-        it.each([
-            [
-                'all required travel personal details are present',
-                {
-                    legalFirstName: 'John',
-                    legalLastName: 'Doe',
-                },
-                false,
-            ],
-            [
-                'legalFirstName is missing',
-                {
-                    legalLastName: 'Doe',
-                },
-                true,
-            ],
-            [
-                'legalFirstName is empty',
-                {
-                    legalFirstName: '',
-                    legalLastName: 'Doe',
-                },
-                true,
-            ],
-            [
-                'legalLastName is missing',
-                {
-                    legalFirstName: 'John',
-                },
-                true,
-            ],
-            [
-                'legalLastName is empty',
-                {
-                    legalFirstName: 'John',
-                    legalLastName: '',
-                },
-                true,
-            ],
-            ['all fields are missing', {}, true],
-            ['null', null, true],
-            ['undefined', undefined, true],
-        ] as const)('should return %s when %s', (_description, details, expected) => {
-            expect(areTravelPersonalDetailsMissing(details as PrivatePersonalDetails)).toBe(expected);
         });
     });
 

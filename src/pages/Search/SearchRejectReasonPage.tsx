@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {useDelegateNoAccessActions, useDelegateNoAccessState} from '@components/DelegateNoAccessModalProvider';
 import type {FormInputErrors, FormOnyxValues} from '@components/Form/types';
-import {useSearchActionsContext, useSearchStateContext} from '@components/Search/SearchContext';
+import {useSearchContext} from '@components/Search/SearchContext';
 import useCurrentUserPersonalDetails from '@hooks/useCurrentUserPersonalDetails';
 import useLocalize from '@hooks/useLocalize';
 import useOnyx from '@hooks/useOnyx';
@@ -22,8 +22,7 @@ type SearchRejectReasonPageProps =
     | PlatformStackScreenProps<SearchReportActionsParamList, typeof SCREENS.SEARCH.SEARCH_REJECT_REASON_RHP>;
 
 function SearchRejectReasonPage({route}: SearchRejectReasonPageProps) {
-    const {selectedTransactionIDs, selectedTransactions, currentSearchHash} = useSearchStateContext();
-    const {clearSelectedTransactions} = useSearchActionsContext();
+    const context = useSearchContext();
     const {reportID} = route.params ?? {};
     const [allPolicies] = useOnyx(ONYXKEYS.COLLECTION.POLICY);
     const [allReports] = useOnyx(ONYXKEYS.COLLECTION.REPORT);
@@ -34,13 +33,13 @@ function SearchRejectReasonPage({route}: SearchRejectReasonPageProps) {
     // When coming from the report view, selectedTransactions is empty, build it from selectedTransactionIDs
     const selectedTransactionsForReject = useMemo(() => {
         if (route.name === SCREENS.SEARCH.MONEY_REQUEST_REPORT_REJECT_TRANSACTIONS && reportID) {
-            return selectedTransactionIDs.reduce<Record<string, {reportID: string}>>((acc, transactionID) => {
+            return context.selectedTransactionIDs.reduce<Record<string, {reportID: string}>>((acc, transactionID) => {
                 acc[transactionID] = {reportID};
                 return acc;
             }, {});
         }
-        return selectedTransactions;
-    }, [route.name, reportID, selectedTransactionIDs, selectedTransactions]);
+        return context.selectedTransactions;
+    }, [route.name, reportID, context.selectedTransactionIDs, context.selectedTransactions]);
 
     const {isDelegateAccessRestricted} = useDelegateNoAccessState();
     const {showDelegateNoAccessModal} = useDelegateNoAccessActions();
@@ -51,29 +50,18 @@ function SearchRejectReasonPage({route}: SearchRejectReasonPageProps) {
                 return;
             }
 
-            const urlToNavigateBack = rejectMoneyRequestsOnSearch(currentSearchHash, selectedTransactionsForReject, comment, allPolicies, allReports, currentUserAccountID, betas);
+            const urlToNavigateBack = rejectMoneyRequestsOnSearch(context.currentSearchHash, selectedTransactionsForReject, comment, allPolicies, allReports, currentUserAccountID, betas);
             if (route.name === SCREENS.SEARCH.MONEY_REQUEST_REPORT_REJECT_TRANSACTIONS) {
-                clearSelectedTransactions(true);
+                context.clearSelectedTransactions(true);
             } else {
-                clearSelectedTransactions();
+                context.clearSelectedTransactions();
             }
             Navigation.dismissToSuperWideRHP();
             if (urlToNavigateBack) {
                 Navigation.isNavigationReady().then(() => Navigation.goBack(urlToNavigateBack as Route));
             }
         },
-        [
-            currentSearchHash,
-            clearSelectedTransactions,
-            allPolicies,
-            allReports,
-            route.name,
-            selectedTransactionsForReject,
-            isDelegateAccessRestricted,
-            currentUserAccountID,
-            showDelegateNoAccessModal,
-            betas,
-        ],
+        [context, allPolicies, allReports, route.name, selectedTransactionsForReject, isDelegateAccessRestricted, currentUserAccountID, showDelegateNoAccessModal, betas],
     );
 
     const validate = useCallback(

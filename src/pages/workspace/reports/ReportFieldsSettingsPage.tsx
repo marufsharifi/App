@@ -3,10 +3,10 @@ import React, {useState} from 'react';
 import {View} from 'react-native';
 import ConfirmModal from '@components/ConfirmModal';
 import HeaderWithBackButton from '@components/HeaderWithBackButton';
+import * as Expensicons from '@components/Icon/Expensicons';
 import MenuItem from '@components/MenuItem';
 import MenuItemWithTopDescription from '@components/MenuItemWithTopDescription';
 import ScreenWrapper from '@components/ScreenWrapper';
-import {useMemoizedLazyExpensifyIcons} from '@hooks/useLazyAsset';
 import useLocalize from '@hooks/useLocalize';
 import useThemeStyles from '@hooks/useThemeStyles';
 import Navigation from '@libs/Navigation/Navigation';
@@ -35,7 +35,6 @@ function ReportFieldsSettingsPage({
     const styles = useThemeStyles();
     const {translate, localeCompare} = useLocalize();
     const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
-    const icons = useMemoizedLazyExpensifyIcons(['Trashcan'] as const);
 
     const hasAccountingConnections = hasAccountingConnectionsPolicyUtils(policy);
     const reportFieldKey = getReportFieldKey(reportFieldID);
@@ -122,7 +121,7 @@ function ReportFieldsSettingsPage({
                     {!hasAccountingConnections && (
                         <View style={styles.flexGrow1}>
                             <MenuItem
-                                icon={icons.Trashcan}
+                                icon={Expensicons.Trashcan}
                                 title={translate('common.delete')}
                                 onPress={() => setIsDeleteModalVisible(true)}
                             />

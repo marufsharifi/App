@@ -3,7 +3,6 @@
  */
 import type {EmptyObject, ValueOf} from 'type-fest';
 import type DotLottieAnimation from '@components/LottieAnimations/types';
-import type {CancelConfirmModalProps} from '@components/MultifactorAuthentication/components/Modals/createCancelConfirmModal';
 import type {
     AllMultifactorAuthenticationBaseParameters,
     MultifactorAuthenticationActionParams,
@@ -44,7 +43,7 @@ type MultifactorAuthenticationPrompt = Record<string, MultifactorAuthenticationP
  * Configuration for modals in multifactor authentication flows.
  */
 type MultifactorAuthenticationModal = {
-    cancelConfirmation: (props: CancelConfirmModalProps) => React.ReactElement<CancelConfirmModalProps>;
+    cancelConfirmation: MultifactorAuthenticationCancelConfirm;
 };
 
 type FailureScreenOverrides = Partial<Record<MultifactorAuthenticationReason, React.ReactElement>>;
@@ -106,15 +105,6 @@ type MultifactorAuthenticationScenarioBase<T extends Record<string, unknown> = E
      * (e.g., whether to show the outcome screen or let the callback handle navigation).
      */
     callback?: MultifactorAuthenticationScenarioCallback;
-
-    /**
-     * Called when the user cancels the MFA flow. When provided, cancel() awaits this function
-     * and uses the returned reason (and optional payload) to navigate to the appropriate failure screen.
-     * When absent, cancel() falls back to the default behavior (SET_ERROR with GENERIC.CANCELED).
-     */
-    onCancel?: (
-        payload: MultifactorAuthenticationScenarioAdditionalParams<MultifactorAuthenticationScenario> | undefined,
-    ) => Promise<{reason: MultifactorAuthenticationReason; payload?: MultifactorAuthenticationScenarioAdditionalParams<MultifactorAuthenticationScenario>}>;
 };
 
 /**
@@ -122,7 +112,7 @@ type MultifactorAuthenticationScenarioBase<T extends Record<string, unknown> = E
  */
 type MultifactorAuthenticationScenarioConfig<T extends Record<string, unknown> = EmptyObject> = MultifactorAuthenticationScenarioBase<T> &
     MultifactorAuthenticationOutcomeScreens & {
-        modals: MultifactorAuthenticationModal;
+        MODALS: MultifactorAuthenticationModal;
     };
 
 /**
@@ -131,14 +121,14 @@ type MultifactorAuthenticationScenarioConfig<T extends Record<string, unknown> =
  */
 type MultifactorAuthenticationScenarioCustomConfig<T extends Record<string, unknown> = EmptyObject> = MultifactorAuthenticationScenarioBase<T> &
     Partial<MultifactorAuthenticationOutcomeScreens> & {
-        modals?: Partial<MultifactorAuthenticationModal>;
+        MODALS?: Partial<MultifactorAuthenticationModal>;
     };
 
 /**
  * Default UI configuration shared across scenarios.
  */
 type MultifactorAuthenticationDefaultUIConfig = Required<MultifactorAuthenticationOutcomeScreens> & {
-    modals: MultifactorAuthenticationModal;
+    MODALS: MultifactorAuthenticationModal;
 };
 
 /**
@@ -209,7 +199,6 @@ export type {
     MultifactorAuthenticationScenarioConfigRecord,
     MultifactorAuthenticationProcessScenarioParameters,
     MultifactorAuthenticationDefaultUIConfig,
-    MultifactorAuthenticationCancelConfirm,
     MultifactorAuthenticationScenarioCustomConfig,
     FailureScreenOverrides,
 };

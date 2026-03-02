@@ -4,6 +4,7 @@ import {View} from 'react-native';
 import type {OnyxEntry} from 'react-native-onyx';
 import Button from '@components/Button';
 import FormHelpMessage from '@components/FormHelpMessage';
+import {GalleryPlus} from '@components/Icon/Expensicons';
 import PressableWithFeedback from '@components/Pressable/PressableWithFeedback';
 import ReceiptImage from '@components/ReceiptImage';
 import Text from '@components/Text';
@@ -12,7 +13,6 @@ import type {BaseTextInputRef} from '@components/TextInput/BaseTextInput/types';
 import type {WithCurrentUserPersonalDetailsProps} from '@components/withCurrentUserPersonalDetails';
 import withCurrentUserPersonalDetails from '@components/withCurrentUserPersonalDetails';
 import useDefaultExpensePolicy from '@hooks/useDefaultExpensePolicy';
-import {useMemoizedLazyExpensifyIcons} from '@hooks/useLazyAsset';
 import useLocalize from '@hooks/useLocalize';
 import useOnyx from '@hooks/useOnyx';
 import usePersonalPolicy from '@hooks/usePersonalPolicy';
@@ -34,6 +34,7 @@ import Navigation from '@libs/Navigation/Navigation';
 import {roundToTwoDecimalPlaces} from '@libs/NumberUtils';
 import {isArchivedReport, isPolicyExpenseChat as isPolicyExpenseChatUtils} from '@libs/ReportUtils';
 import shouldUseDefaultExpensePolicyUtil from '@libs/shouldUseDefaultExpensePolicy';
+import {getRateID} from '@libs/TransactionUtils';
 import variables from '@styles/variables';
 import CONST from '@src/CONST';
 import type {OdometerImageType} from '@src/CONST';
@@ -126,6 +127,7 @@ function IOURequestStepDistanceOdometer({
     const [shouldEnableDiscardConfirmation, setShouldEnableDiscardConfirmation] = useState(!isEditingConfirmation && !isEditing);
 
     const shouldUseDefaultExpensePolicy = useMemo(() => shouldUseDefaultExpensePolicyUtil(iouType, defaultExpensePolicy), [iouType, defaultExpensePolicy]);
+    const customUnitRateID = getRateID(transaction);
 
     const unit = DistanceRequestUtils.getRate({transaction: currentTransaction, policy: shouldUseDefaultExpensePolicy ? defaultExpensePolicy : policy}).unit;
 
@@ -342,7 +344,6 @@ function IOURequestStepDistanceOdometer({
 
     const [recentWaypoints] = useOnyx(ONYXKEYS.NVP_RECENT_WAYPOINTS);
     const [betas] = useOnyx(ONYXKEYS.BETAS);
-    const icons = useMemoizedLazyExpensifyIcons(['GalleryPlus'] as const);
     // Navigate to next page following Manual tab pattern
     const navigateToNextPage = () => {
         const start = parseFloat(startReading);
@@ -424,6 +425,7 @@ function IOURequestStepDistanceOdometer({
             transactionID,
             reportAttributesDerived,
             personalDetails,
+            customUnitRateID,
             currentUserLogin: currentUserEmailParam,
             currentUserAccountID: currentUserAccountIDParam,
             backToReport,
@@ -528,7 +530,7 @@ function IOURequestStepDistanceOdometer({
                                     shouldUseThumbnailImage
                                     thumbnailContainerStyles={styles.bgTransparent}
                                     isAuthTokenRequired
-                                    fallbackIcon={icons.GalleryPlus}
+                                    fallbackIcon={GalleryPlus}
                                     fallbackIconSize={variables.iconSizeNormal}
                                     fallbackIconColor={theme.icon}
                                     iconSize="x-small"
@@ -576,7 +578,7 @@ function IOURequestStepDistanceOdometer({
                                     shouldUseThumbnailImage
                                     thumbnailContainerStyles={styles.bgTransparent}
                                     isAuthTokenRequired
-                                    fallbackIcon={icons.GalleryPlus}
+                                    fallbackIcon={GalleryPlus}
                                     fallbackIconSize={variables.iconSizeNormal}
                                     fallbackIconColor={theme.icon}
                                     iconSize="x-small"

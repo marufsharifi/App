@@ -7,12 +7,12 @@ import CONST from '@src/CONST';
 import type BackgroundImageProps from './types';
 
 const BackgroundMobile = lazy(() =>
-    import('@assets/images/home-background--mobile.svg').catch((): {default: React.FC} => ({
+    import('@assets/images/home-background--mobile.svg').catch(() => ({
         default: () => null,
     })),
 );
 const BackgroundDesktop = lazy(() =>
-    import('@assets/images/home-background--desktop.svg').catch((): {default: React.FC} => ({
+    import('@assets/images/home-background--desktop.svg').catch(() => ({
         default: () => null,
     })),
 );

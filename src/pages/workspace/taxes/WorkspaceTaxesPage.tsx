@@ -6,6 +6,8 @@ import ButtonWithDropdownMenu from '@components/ButtonWithDropdownMenu';
 import type {DropdownOption, WorkspaceTaxRatesBulkActionType} from '@components/ButtonWithDropdownMenu/types';
 import ConfirmModal from '@components/ConfirmModal';
 import HeaderWithBackButton from '@components/HeaderWithBackButton';
+// eslint-disable-next-line no-restricted-imports
+import * as Expensicons from '@components/Icon/Expensicons';
 import ImportedFromAccountingSoftware from '@components/ImportedFromAccountingSoftware';
 import ScreenWrapper from '@components/ScreenWrapper';
 import SearchBar from '@components/SearchBar';
@@ -80,7 +82,7 @@ function WorkspaceTaxesPage({
 
     const enabledRatesCount = selectedTaxesIDs.filter((taxID) => !policy?.taxRates?.taxes[taxID]?.isDisabled).length;
     const disabledRatesCount = selectedTaxesIDs.length - enabledRatesCount;
-    const icons = useMemoizedLazyExpensifyIcons(['Checkmark', 'Close', 'Gear', 'Plus', 'Trashcan'] as const);
+    const icons = useMemoizedLazyExpensifyIcons(['Gear']);
     const illustrations = useMemoizedLazyIllustrations(['Coins']);
 
     const fetchTaxes = useCallback(() => {
@@ -277,7 +279,7 @@ function WorkspaceTaxesPage({
         const options: Array<DropdownOption<WorkspaceTaxRatesBulkActionType>> = [];
         if (!hasAccountingConnections) {
             options.push({
-                icon: icons.Trashcan,
+                icon: Expensicons.Trashcan,
                 text: isMultiple ? translate('workspace.taxes.actions.deleteMultiple') : translate('workspace.taxes.actions.delete'),
                 value: CONST.POLICY.BULK_ACTION_TYPES.DELETE,
                 onSelected: () => setIsDeleteModalVisible(true),
@@ -287,7 +289,7 @@ function WorkspaceTaxesPage({
         // `Disable rates` when at least one enabled rate is selected.
         if (selectedTaxesIDs.some((taxID) => !policy?.taxRates?.taxes[taxID]?.isDisabled)) {
             options.push({
-                icon: icons.Close,
+                icon: Expensicons.Close,
                 text: translate('workspace.taxes.actions.disableTaxRates', {count: enabledRatesCount}),
                 value: CONST.POLICY.BULK_ACTION_TYPES.DISABLE,
                 onSelected: () => toggleTaxes(false),
@@ -297,14 +299,14 @@ function WorkspaceTaxesPage({
         // `Enable rates` when at least one disabled rate is selected.
         if (selectedTaxesIDs.some((taxID) => policy?.taxRates?.taxes[taxID]?.isDisabled)) {
             options.push({
-                icon: icons.Checkmark,
+                icon: Expensicons.Checkmark,
                 text: translate('workspace.taxes.actions.enableTaxRates', {count: disabledRatesCount}),
                 value: CONST.POLICY.BULK_ACTION_TYPES.ENABLE,
                 onSelected: () => toggleTaxes(true),
             });
         }
         return options;
-    }, [hasAccountingConnections, icons.Checkmark, icons.Close, icons.Trashcan, policy?.taxRates?.taxes, selectedTaxesIDs, toggleTaxes, translate, enabledRatesCount, disabledRatesCount]);
+    }, [hasAccountingConnections, policy?.taxRates?.taxes, selectedTaxesIDs, toggleTaxes, translate, enabledRatesCount, disabledRatesCount]);
 
     const shouldShowBulkActionsButton = shouldUseNarrowLayout ? isMobileSelectionModeEnabled : selectedTaxesIDs.length > 0;
 
@@ -327,7 +329,7 @@ function WorkspaceTaxesPage({
                     success
                     onPress={() => Navigation.navigate(ROUTES.WORKSPACE_TAX_CREATE.getRoute(policyID))}
                     sentryLabel={CONST.SENTRY_LABEL.WORKSPACE.TAXES.ADD_BUTTON}
-                    icon={icons.Plus}
+                    icon={Expensicons.Plus}
                     text={translate('workspace.taxes.addRate')}
                     style={[shouldUseNarrowLayout && styles.flex1]}
                 />
@@ -401,7 +403,6 @@ function WorkspaceTaxesPage({
                     shouldUseHeadlineHeader={!selectionModeHeader}
                     title={translate(selectionModeHeader ? 'common.selectMultiple' : 'workspace.common.taxes')}
                     shouldShowBackButton={shouldUseNarrowLayout}
-                    shouldDisplayHelpButton
                     onBackButtonPress={() => {
                         if (isMobileSelectionModeEnabled) {
                             setSelectedTaxesIDs([]);

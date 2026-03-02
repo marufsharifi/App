@@ -16,7 +16,6 @@ import PreRenderer from './PreRenderer';
 import RBRRenderer from './RBRRenderer';
 import ShortMentionRenderer from './ShortMentionRenderer';
 import TaskTitleRenderer from './TaskTitleRenderer';
-import TransactionHistoryLinkRenderer from './TransactionHistoryLinkRenderer';
 import UserDetailsRenderer from './UserDetailsRenderer';
 import VideoRenderer from './VideoRenderer';
 
@@ -46,7 +45,6 @@ const HTMLEngineProviderComponentList: CustomTagRendererRecord = {
     'next-step-email': NextStepEmailRenderer,
     'deleted-action': DeletedActionRenderer,
     'concierge-link': ConciergeLinkRenderer,
-    'transaction-history-link': TransactionHistoryLinkRenderer,
     'account-manager-link': AccountManagerLinkRenderer,
     /* eslint-enable @typescript-eslint/naming-convention */
 };

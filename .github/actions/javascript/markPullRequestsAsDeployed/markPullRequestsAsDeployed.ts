@@ -43,9 +43,9 @@ const workflowURL = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOS
 const getCommit = memoize(GithubUtils.octokit.git.getCommit);
 
 /**
- * Process deploy checklist comments for a list of PRs
+ * Process staging deploy comments for a list of PRs
  */
-async function commentOnDeployChecklistPRs(
+async function commentStagingDeployPRs(
     prList: number[],
     repoName: string,
     recentTags: Awaited<ReturnType<typeof GithubUtils.octokit.repos.listTags>>['data'],
@@ -186,11 +186,11 @@ async function run() {
     }
 
     // Comment on the PRs
-    await commentOnDeployChecklistPRs(prList, CONST.APP_REPO, appRecentTags, getDeployMessage);
+    await commentStagingDeployPRs(prList, CONST.APP_REPO, appRecentTags, getDeployMessage);
     console.log(`✅ Added staging deploy comment ${prList.length} App PRs`);
 
     if (mobileExpensifyPRList.length > 0) {
-        await commentOnDeployChecklistPRs(mobileExpensifyPRList, CONST.MOBILE_EXPENSIFY_REPO, mobileExpensifyRecentTags, getDeployMessage);
+        await commentStagingDeployPRs(mobileExpensifyPRList, CONST.MOBILE_EXPENSIFY_REPO, mobileExpensifyRecentTags, getDeployMessage);
         console.log(`✅ Completed staging deploy comment on ${mobileExpensifyPRList.length} Mobile-Expensify PRs`);
     }
 }

@@ -40,7 +40,6 @@ describe('useReportUnreadMessageScrollTracking', () => {
                     unreadMarkerReportActionIndex: -1,
                     isInverted: true,
                     onTrackScrolling: onTrackScrollingMockFn,
-                    hasOnceLoadedReportActions: true,
                 }),
             );
 
@@ -70,7 +69,6 @@ describe('useReportUnreadMessageScrollTracking', () => {
                     isInverted: true,
                     unreadMarkerReportActionIndex: -1,
                     onTrackScrolling: onTrackScrollingMockFn,
-                    hasOnceLoadedReportActions: true,
                 }),
             );
 
@@ -97,7 +95,6 @@ describe('useReportUnreadMessageScrollTracking', () => {
                     isInverted: true,
                     unreadMarkerReportActionIndex: 1,
                     onTrackScrolling: onTrackScrollingMockFn,
-                    hasOnceLoadedReportActions: true,
                 }),
             );
 
@@ -129,7 +126,6 @@ describe('useReportUnreadMessageScrollTracking', () => {
                     unreadMarkerReportActionIndex: -1,
                     isInverted: true,
                     onTrackScrolling: onTrackScrollingMockFn,
-                    hasOnceLoadedReportActions: true,
                 }),
             );
 
@@ -155,7 +151,6 @@ describe('useReportUnreadMessageScrollTracking', () => {
                     unreadMarkerReportActionIndex: 1,
                     isInverted: true,
                     onTrackScrolling: onTrackScrollingMockFn,
-                    hasOnceLoadedReportActions: true,
                 }),
             );
 
@@ -185,7 +180,6 @@ describe('useReportUnreadMessageScrollTracking', () => {
                     unreadMarkerReportActionIndex: 1,
                     isInverted: true,
                     onTrackScrolling: onTrackScrollingMockFn,
-                    hasOnceLoadedReportActions: true,
                 }),
             );
 

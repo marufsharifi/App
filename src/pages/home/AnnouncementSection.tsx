@@ -8,15 +8,7 @@ import useResponsiveLayout from '@hooks/useResponsiveLayout';
 import useThemeStyles from '@hooks/useThemeStyles';
 import CONST from '@src/CONST';
 
-const announcements = CONST.HOME.ANNOUNCEMENTS.toSorted((a, b) => {
-    if (a.publishedDate > b.publishedDate) {
-        return -1;
-    }
-    if (a.publishedDate < b.publishedDate) {
-        return 1;
-    }
-    return 0;
-});
+const announcements = CONST.HOME.ANNOUNCEMENTS;
 
 function AnnouncementSection() {
     const {shouldUseNarrowLayout} = useResponsiveLayout();

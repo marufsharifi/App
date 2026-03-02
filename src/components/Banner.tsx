@@ -121,7 +121,7 @@ function Banner({
                         {shouldShowButton && (
                             <Button
                                 success
-                                style={[styles.ph3]}
+                                style={[styles.pr3]}
                                 text={translate('common.chatNow')}
                                 onPress={onButtonPress}
                             />
@@ -132,7 +132,6 @@ function Banner({
                                     onPress={onClose}
                                     role={CONST.ROLE.BUTTON}
                                     accessibilityLabel={text ? `${translate('common.close')}, ${text}` : translate('common.close')}
-                                    sentryLabel="Banner-Close"
                                 >
                                     <Icon
                                         src={expensifyIcons.Close}

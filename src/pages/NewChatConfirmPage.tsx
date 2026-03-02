@@ -20,7 +20,7 @@ import Navigation from '@libs/Navigation/Navigation';
 import {getParticipantsOption} from '@libs/OptionsListUtils';
 import {getGroupChatName} from '@libs/ReportNameUtils';
 import {generateReportID, getDefaultGroupAvatar} from '@libs/ReportUtils';
-import {navigateToAndCreateGroupChat, setGroupDraft} from '@userActions/Report';
+import {navigateToAndOpenReport, setGroupDraft} from '@userActions/Report';
 import CONST from '@src/CONST';
 import ONYXKEYS from '@src/ONYXKEYS';
 import ROUTES from '@src/ROUTES';
@@ -43,8 +43,6 @@ function NewChatConfirmPage() {
     const personalData = useCurrentUserPersonalDetails();
     const [newGroupDraft, newGroupDraftMetaData] = useOnyx(ONYXKEYS.NEW_GROUP_CHAT_DRAFT);
     const [allPersonalDetails] = useOnyx(ONYXKEYS.PERSONAL_DETAILS_LIST);
-    const [introSelected] = useOnyx(ONYXKEYS.NVP_INTRO_SELECTED);
-
     const icons = useMemoizedLazyExpensifyIcons(['Camera']);
 
     const selectedOptions = useMemo((): Participant[] => {
@@ -101,8 +99,8 @@ function NewChatConfirmPage() {
         }
 
         const logins: string[] = (newGroupDraft.participants ?? []).map((participant) => participant.login).filter((login): login is string => !!login);
-        navigateToAndCreateGroupChat(logins, newGroupDraft.reportName ?? '', personalData.login ?? '', optimisticReportID.current, introSelected, newGroupDraft.avatarUri ?? '', avatarFile);
-    }, [newGroupDraft, avatarFile, personalData.login, introSelected]);
+        navigateToAndOpenReport(logins, true, newGroupDraft.reportName ?? '', newGroupDraft.avatarUri ?? '', avatarFile, optimisticReportID.current, true);
+    }, [newGroupDraft, avatarFile]);
 
     const stashedLocalAvatarImage = newGroupDraft?.avatarUri;
 

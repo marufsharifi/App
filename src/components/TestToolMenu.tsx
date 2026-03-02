@@ -3,7 +3,7 @@ import {View} from 'react-native';
 import useIsAuthenticated from '@hooks/useIsAuthenticated';
 import useLocalize from '@hooks/useLocalize';
 import useOnyx from '@hooks/useOnyx';
-import {useSidebarOrderedReportsActions} from '@hooks/useSidebarOrderedReports';
+import {useSidebarOrderedReports} from '@hooks/useSidebarOrderedReports';
 import useSingleExecution from '@hooks/useSingleExecution';
 import useThemeStyles from '@hooks/useThemeStyles';
 import useWaitForNavigation from '@hooks/useWaitForNavigation';
@@ -31,7 +31,7 @@ function TestToolMenu() {
     const [isDebugModeEnabled = false] = useOnyx(ONYXKEYS.IS_DEBUG_MODE_ENABLED);
     const styles = useThemeStyles();
     const {translate} = useLocalize();
-    const {clearLHNCache} = useSidebarOrderedReportsActions();
+    const {clearLHNCache} = useSidebarOrderedReports();
     const [hasBiometricsRegistered = false] = useOnyx(ONYXKEYS.ACCOUNT, {selector: hasBiometricsRegisteredSelector});
     const [isAccountLoading = false] = useOnyx(ONYXKEYS.ACCOUNT, {selector: isAccountLoadingSelector});
 
@@ -65,10 +65,7 @@ function TestToolMenu() {
             {isAuthenticated && (
                 <>
                     {/* When toggled the app will be put into debug mode. */}
-                    <TestToolRow
-                        title={translate('initialSettingsPage.troubleshoot.debugMode')}
-                        isTitleAccessible={false}
-                    >
+                    <TestToolRow title={translate('initialSettingsPage.troubleshoot.debugMode')}>
                         <Switch
                             accessibilityLabel={translate('initialSettingsPage.troubleshoot.debugMode')}
                             isOn={isDebugModeEnabled}
@@ -140,10 +137,7 @@ function TestToolMenu() {
         This enables QA, internal testers and external devs to take advantage of sandbox environments for 3rd party services like Plaid and Onfido.
         This toggle is not rendered for internal devs as they make environment changes directly to the .env file. */}
             {!CONFIG.IS_USING_LOCAL_WEB && (
-                <TestToolRow
-                    title={translate('initialSettingsPage.troubleshoot.useStagingServer')}
-                    isTitleAccessible={false}
-                >
+                <TestToolRow title={translate('initialSettingsPage.troubleshoot.useStagingServer')}>
                     <Switch
                         accessibilityLabel="Use Staging Server"
                         isOn={shouldUseStagingServer}
@@ -153,10 +147,7 @@ function TestToolMenu() {
             )}
 
             {/* When toggled the app will be forced offline. */}
-            <TestToolRow
-                title={translate('initialSettingsPage.troubleshoot.forceOffline')}
-                isTitleAccessible={false}
-            >
+            <TestToolRow title={translate('initialSettingsPage.troubleshoot.forceOffline')}>
                 <Switch
                     accessibilityLabel="Force offline"
                     isOn={!!network?.shouldForceOffline}
@@ -166,10 +157,7 @@ function TestToolMenu() {
             </TestToolRow>
 
             {/* When toggled the app will randomly change internet connection every 2-5 seconds */}
-            <TestToolRow
-                title={translate('initialSettingsPage.troubleshoot.simulatePoorConnection')}
-                isTitleAccessible={false}
-            >
+            <TestToolRow title={translate('initialSettingsPage.troubleshoot.simulatePoorConnection')}>
                 <Switch
                     accessibilityLabel="Simulate poor internet connection"
                     isOn={!!network?.shouldSimulatePoorConnection}
@@ -179,10 +167,7 @@ function TestToolMenu() {
             </TestToolRow>
 
             {/* When toggled all network requests will fail. */}
-            <TestToolRow
-                title={translate('initialSettingsPage.troubleshoot.simulateFailingNetworkRequests')}
-                isTitleAccessible={false}
-            >
+            <TestToolRow title={translate('initialSettingsPage.troubleshoot.simulateFailingNetworkRequests')}>
                 <Switch
                     accessibilityLabel="Simulate failing network requests"
                     isOn={!!network?.shouldFailAllRequests}

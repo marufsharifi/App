@@ -98,9 +98,6 @@ type MoneyRequestReportPreviewContentProps = MoneyRequestReportPreviewContentOny
 
         /** Callback called when the whole preview is pressed */
         onPress: () => void;
-
-        /** IDs of newly added transactions */
-        newTransactionIDs?: Set<string>;
     };
 
 export type {MoneyRequestReportPreviewContentProps, MoneyRequestReportPreviewProps, MoneyRequestReportPreviewStyleType};

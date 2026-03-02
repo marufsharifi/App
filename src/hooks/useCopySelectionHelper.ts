@@ -1,7 +1,7 @@
 import {useEffect} from 'react';
 import Clipboard from '@libs/Clipboard';
-import getClipboardText from '@libs/Clipboard/getClipboardText';
 import KeyboardShortcut from '@libs/KeyboardShortcut';
+import Parser from '@libs/Parser';
 import SelectionScraper from '@libs/SelectionScraper';
 import CONST from '@src/CONST';
 
@@ -10,12 +10,11 @@ function copySelectionToClipboard() {
     if (!selection) {
         return;
     }
-    const clipboardText = getClipboardText(selection);
     if (!Clipboard.canSetHtml()) {
-        Clipboard.setString(clipboardText);
+        Clipboard.setString(Parser.htmlToMarkdown(selection));
         return;
     }
-    Clipboard.setHtml(selection, clipboardText);
+    Clipboard.setHtml(selection, Parser.htmlToText(selection));
 }
 
 export default function useCopySelectionHelper() {

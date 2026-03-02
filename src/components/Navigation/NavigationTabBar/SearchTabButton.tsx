@@ -44,10 +44,16 @@ function SearchTabButton({selectedTab, isWideLayout}: SearchTabButtonProps) {
         }
         clearSelectedText();
         interceptAnonymousUser(() => {
-            startSpan(CONST.TELEMETRY.SPAN_NAVIGATE_TO_REPORTS, {
-                name: CONST.TELEMETRY.SPAN_NAVIGATE_TO_REPORTS,
-                op: CONST.TELEMETRY.SPAN_NAVIGATE_TO_REPORTS,
-                forceTransaction: true,
+            const parentSpan = startSpan(CONST.TELEMETRY.SPAN_NAVIGATE_TO_REPORTS_TAB, {
+                name: CONST.TELEMETRY.SPAN_NAVIGATE_TO_REPORTS_TAB,
+                op: CONST.TELEMETRY.SPAN_NAVIGATE_TO_REPORTS_TAB,
+            });
+            parentSpan?.setAttribute(CONST.TELEMETRY.ATTRIBUTE_ROUTE_FROM, selectedTab ?? '');
+
+            startSpan(CONST.TELEMETRY.SPAN_ON_LAYOUT_SKELETON_REPORTS, {
+                name: CONST.TELEMETRY.SPAN_ON_LAYOUT_SKELETON_REPORTS,
+                op: CONST.TELEMETRY.SPAN_ON_LAYOUT_SKELETON_REPORTS,
+                parentSpan,
             });
 
             const lastSearchRoute = getLastRoute(navigationRef.getRootState(), NAVIGATORS.SEARCH_FULLSCREEN_NAVIGATOR, SCREENS.SEARCH.ROOT);

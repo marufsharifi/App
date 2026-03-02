@@ -50,7 +50,6 @@ import type {
     ReportTransactionsAndViolationsDerivedValue,
     TodoMetadata,
     TodosDerivedValue,
-    VisibleReportActionsDerivedValue,
 } from './DerivedValues';
 import type DeviceBiometrics from './DeviceBiometrics';
 import type DismissedProductTraining from './DismissedProductTraining';
@@ -79,7 +78,6 @@ import type LastExportMethod from './LastExportMethod';
 import type {LastPaymentMethod, LastPaymentMethodType} from './LastPaymentMethod';
 import type LastSelectedDistanceRates from './LastSelectedDistanceRates';
 import type Locale from './Locale';
-import type LocallyProcessed3DSChallengeReviews from './LocallyProcessed3DSChallengeReviews';
 import type LocalPasskeyCredentialsEntry from './LocalPasskeyCredentialsEntry';
 import type {PasskeyCredential, PasskeyTransport} from './LocalPasskeyCredentialsEntry';
 import type LockAccountDetails from './LockAccountDetails';
@@ -153,8 +151,6 @@ import type StripeCustomerID from './StripeCustomerID';
 import type SupportalPermissionDenied from './SupportalPermissionDenied';
 import type Task from './Task';
 import type Transaction from './Transaction';
-import type TransactionPending3DSReview from './TransactionPending3DSReview';
-import type TransactionsPending3DSReview from './TransactionsPending3DSReview';
 import type {TransactionViolation, ViolationName} from './TransactionViolation';
 import type TransactionViolations from './TransactionViolation';
 import type TravelProvisioning from './TravelProvisioning';
@@ -181,8 +177,6 @@ export type {
     Account,
     AccountData,
     AssignCard,
-    TransactionPending3DSReview,
-    TransactionsPending3DSReview,
     BankAccount,
     BankAccountList,
     Beta,
@@ -352,7 +346,6 @@ export type {
     LastSearchParams,
     ReportTransactionsAndViolationsDerivedValue,
     OutstandingReportsByPolicyIDDerivedValue,
-    VisibleReportActionsDerivedValue,
     NonPersonalAndWorkspaceCardListDerivedValue,
     PersonalAndWorkspaceCardListDerivedValue,
     CardFeedErrorsDerivedValue,
@@ -372,5 +365,4 @@ export type {
     CodingRuleMatchingTransaction,
     UserSecurityGroupData,
     DeviceBiometrics,
-    LocallyProcessed3DSChallengeReviews,
 };

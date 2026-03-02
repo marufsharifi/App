@@ -2,6 +2,8 @@ import React, {useRef} from 'react';
 import ContextMenuItem from '@components/ContextMenuItem';
 import HeaderPageLayout from '@components/HeaderPageLayout';
 import Icon from '@components/Icon';
+// eslint-disable-next-line no-restricted-imports
+import * as Expensicons from '@components/Icon/Expensicons';
 import MenuItem from '@components/MenuItem';
 import Text from '@components/Text';
 import {useMemoizedLazyExpensifyIcons, useMemoizedLazyIllustrations} from '@hooks/useLazyAsset';
@@ -24,7 +26,7 @@ import {showContextMenu} from './inbox/report/ContextMenu/ReportActionContextMen
 type ReferralDetailsPageProps = PlatformStackScreenProps<ReferralDetailsNavigatorParamList, typeof SCREENS.REFERRAL_DETAILS>;
 
 function ReferralDetailsPage({route}: ReferralDetailsPageProps) {
-    const icons = useMemoizedLazyExpensifyIcons(['Checkmark', 'Copy', 'NewWindow', 'QuestionMark'] as const);
+    const icons = useMemoizedLazyExpensifyIcons(['NewWindow', 'QuestionMark']);
     const theme = useTheme();
     const styles = useThemeStyles();
     const illustrations = useMemoizedLazyIllustrations(['PaymentHands']);
@@ -73,8 +75,8 @@ function ReferralDetailsPage({route}: ReferralDetailsPageProps) {
                 <ContextMenuItem
                     isAnonymousAction
                     text={translate('referralProgram.copyReferralLink')}
-                    icon={icons.Copy}
-                    successIcon={icons.Checkmark}
+                    icon={Expensicons.Copy}
+                    successIcon={Expensicons.Checkmark}
                     successText={translate('qrCodes.copied')}
                     onPress={() => Clipboard.setString(referralLink)}
                 />

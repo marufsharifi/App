@@ -1,78 +1,60 @@
 import React from 'react';
 import {View} from 'react-native';
-import type {IllustrationName} from '@components/Icon/chunks/illustrations.chunk';
 import ImageSVG from '@components/ImageSVG';
 import Text from '@components/Text';
 import {useMemoizedLazyIllustrations} from '@hooks/useLazyAsset';
 import useLocalize from '@hooks/useLocalize';
 import useThemeStyles from '@hooks/useThemeStyles';
 import type {TranslationPaths} from '@src/languages/types';
+import type IconAsset from '@src/types/utils/IconAsset';
 
-const ILLUSTRATION_SIZE = 68;
+const ILLUSTRATION_WIDTH = 100;
 
-const MSG = 'homePage.forYouSection.emptyStateMessages' as const;
-
-const ILLUSTRATIONS = [
-    'ThumbsUpStars',
-    'SmallRocket',
-    'CowboyHat',
-    'Trophy1',
-    'PalmTree',
-    'FishbowlBlue',
-    'Target',
-    'Chair',
-    'Broom',
-    'House',
-    'ConciergeBot',
-    'CheckboxText',
-    'Flash',
-    'Sunglasses',
-    'F1Flags',
-    'Fireworks',
-] as const;
-
-type EmptyStateConfig = {
+type EmptyStateMessage = {
     titleKey: TranslationPaths;
-    descriptionKey: TranslationPaths;
-    illustrationName: IllustrationName;
+    subtitleKey: TranslationPaths;
+    illustration: IconAsset;
+    illustrationHeight: number;
 };
-
-const lcFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
-
-const EMPTY_STATE_CONFIGS: EmptyStateConfig[] = ILLUSTRATIONS.map((name) => {
-    const uncapitalizedName = lcFirst(name) as Uncapitalize<typeof name>;
-    const titleKey: TranslationPaths = `${MSG}.${uncapitalizedName}Title`;
-    const descriptionKey: TranslationPaths = `${MSG}.${uncapitalizedName}Description`;
-    return {
-        titleKey,
-        descriptionKey,
-        illustrationName: name,
-    };
-});
-
-const ILLUSTRATION_NAMES = EMPTY_STATE_CONFIGS.map((c) => c.illustrationName);
-
-// Selected once at module load so the message stays stable across remounts (e.g. during onboarding modals)
-const RANDOM_INDEX = Math.floor(Math.random() * EMPTY_STATE_CONFIGS.length);
-// eslint-disable-next-line rulesdir/prefer-at -- Using [0] for definite type since .at() returns T | undefined
-const CONFIG = EMPTY_STATE_CONFIGS.at(RANDOM_INDEX) ?? EMPTY_STATE_CONFIGS[0];
 
 function EmptyState() {
     const styles = useThemeStyles();
     const {translate} = useLocalize();
-    const illustrations = useMemoizedLazyIllustrations(ILLUSTRATION_NAMES);
+    const illustrations = useMemoizedLazyIllustrations(['ThumbsUpStars', 'Fireworks']);
+
+    const defaultEmptyStateMessage: EmptyStateMessage = {
+        titleKey: 'homePage.forYouSection.emptyStateMessages.nicelyDone',
+        subtitleKey: 'homePage.forYouSection.emptyStateMessages.keepAnEyeOut',
+        illustration: illustrations.ThumbsUpStars,
+        // ThumbsUpStars viewBox is 68x68 (1:1 aspect ratio)
+        illustrationHeight: 100,
+    };
+
+    const emptyStateMessages: EmptyStateMessage[] = [
+        defaultEmptyStateMessage,
+        {
+            titleKey: 'homePage.forYouSection.emptyStateMessages.allCaughtUp',
+            subtitleKey: 'homePage.forYouSection.emptyStateMessages.upcomingTodos',
+            illustration: illustrations.Fireworks,
+            // Fireworks viewBox is 164x148, so height = 100 * (148/164) ≈ 90
+            illustrationHeight: 90,
+        },
+    ];
+
+    // Select a random empty state message on mount (will change on refresh/remount)
+    // eslint-disable-next-line react-hooks/purity -- Random selection is intentional and should only happen once on mount
+    const randomIndex = Math.floor(Math.random() * emptyStateMessages.length);
+    const emptyStateMessage = emptyStateMessages.at(randomIndex) ?? defaultEmptyStateMessage;
 
     return (
         <View style={styles.forYouEmptyStateContainer}>
             <ImageSVG
-                src={illustrations[CONFIG.illustrationName]}
-                width={ILLUSTRATION_SIZE}
-                height={ILLUSTRATION_SIZE}
+                src={emptyStateMessage.illustration}
+                width={ILLUSTRATION_WIDTH}
+                height={emptyStateMessage.illustrationHeight}
             />
-            <View style={styles.forYouEmptyStateTextContainer}>
-                <Text style={styles.forYouEmptyStateTitle}>{translate(CONFIG.titleKey)}</Text>
-                <Text style={styles.forYouEmptyStateDescription}>{translate(CONFIG.descriptionKey)}</Text>
-            </View>
+            <Text style={styles.forYouEmptyStateTitle}>{translate(emptyStateMessage.titleKey)}</Text>
+            <Text style={styles.forYouEmptyStateSubtitle}>{translate(emptyStateMessage.subtitleKey)}</Text>
         </View>
     );
 }

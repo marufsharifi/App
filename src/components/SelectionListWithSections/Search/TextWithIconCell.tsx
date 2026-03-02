@@ -12,10 +12,9 @@ type TextWithIconCellProps = {
     text?: string;
     showTooltip: boolean;
     textStyle?: StyleProp<TextStyle>;
-    numberOfLines?: number;
 };
 
-export default function TextWithIconCell({icon, text, showTooltip, textStyle, numberOfLines = 1}: TextWithIconCellProps) {
+export default function TextWithIconCell({icon, text, showTooltip, textStyle}: TextWithIconCellProps) {
     const styles = useThemeStyles();
     const theme = useTheme();
 
@@ -34,8 +33,7 @@ export default function TextWithIconCell({icon, text, showTooltip, textStyle, nu
             <TextWithTooltip
                 text={text}
                 shouldShowTooltip={showTooltip}
-                numberOfLines={numberOfLines}
-                style={[styles.label, numberOfLines > 1 ? styles.preWrap : styles.pre, styles.justifyContentCenter, styles.textMicro, styles.textSupporting, styles.flexShrink1, textStyle]}
+                style={[styles.optionDisplayName, styles.label, styles.pre, styles.justifyContentCenter, styles.textMicro, styles.textSupporting, styles.flexShrink1, textStyle]}
             />
         </View>
     );

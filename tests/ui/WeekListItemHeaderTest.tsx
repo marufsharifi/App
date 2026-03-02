@@ -4,8 +4,8 @@ import Onyx from 'react-native-onyx';
 import ComposeProviders from '@components/ComposeProviders';
 import {LocaleContextProvider} from '@components/LocaleContextProvider';
 import OnyxListItemProvider from '@components/OnyxListItemProvider';
-import {SearchActionsContext, SearchStateContext} from '@components/Search/SearchContext';
-import type {SearchActionsContextValue, SearchColumnType, SearchStateContextValue} from '@components/Search/types';
+import {SearchContext} from '@components/Search/SearchContext';
+import type {SearchColumnType} from '@components/Search/types';
 import WeekListItemHeader from '@components/SelectionListWithSections/Search/WeekListItemHeader';
 import type {TransactionWeekGroupListItemType} from '@components/SelectionListWithSections/types';
 import useResponsiveLayout from '@hooks/useResponsiveLayout';
@@ -20,7 +20,8 @@ jest.mock('@libs/Navigation/Navigation');
 jest.mock('@hooks/useResponsiveLayout', () => jest.fn());
 const mockedUseResponsiveLayout = useResponsiveLayout as jest.MockedFunction<typeof useResponsiveLayout>;
 
-const mockSearchStateContext = {
+// Mock search context with all required SearchContextProps fields
+const mockSearchContext = {
     currentSearchHash: 12345,
     currentRecentSearchHash: 12345,
     currentSearchKey: undefined,
@@ -34,12 +35,9 @@ const mockSearchStateContext = {
     shouldResetSearchQuery: false,
     lastSearchType: undefined,
     areAllMatchingItemsSelected: false,
-    shouldShowSelectAllMatchingItems: false,
+    showSelectAllMatchingItems: false,
     shouldShowFiltersBarLoading: false,
     shouldUseLiveData: false,
-} satisfies SearchStateContextValue;
-
-const mockSearchActionsContext = {
     setLastSearchType: jest.fn(),
     setCurrentSearchHashAndKey: jest.fn(),
     setCurrentSearchQueryJSON: jest.fn(),
@@ -47,10 +45,10 @@ const mockSearchActionsContext = {
     removeTransaction: jest.fn(),
     clearSelectedTransactions: jest.fn(),
     setShouldShowFiltersBarLoading: jest.fn(),
-    setShouldShowSelectAllMatchingItems: jest.fn(),
+    shouldShowSelectAllMatchingItems: jest.fn(),
     selectAllMatchingItems: jest.fn(),
     setShouldResetSearchQuery: jest.fn(),
-} satisfies SearchActionsContextValue;
+};
 
 const createWeekListItem = (week: string, options: Partial<TransactionWeekGroupListItemType> = {}): TransactionWeekGroupListItemType => ({
     week,
@@ -81,21 +79,19 @@ const renderWeekListItemHeader = (
 ) => {
     return render(
         <ComposeProviders components={[OnyxListItemProvider, LocaleContextProvider]}>
-            <SearchStateContext.Provider value={mockSearchStateContext}>
-                <SearchActionsContext.Provider value={mockSearchActionsContext}>
-                    <WeekListItemHeader
-                        week={weekItem}
-                        onCheckboxPress={props.onCheckboxPress ?? jest.fn()}
-                        isDisabled={props.isDisabled ?? false}
-                        canSelectMultiple={props.canSelectMultiple ?? false}
-                        isSelectAllChecked={props.isSelectAllChecked ?? false}
-                        isIndeterminate={props.isIndeterminate ?? false}
-                        onDownArrowClick={props.onDownArrowClick}
-                        isExpanded={props.isExpanded ?? false}
-                        columns={props.columns ?? [CONST.SEARCH.TABLE_COLUMNS.GROUP_WEEK, CONST.SEARCH.TABLE_COLUMNS.GROUP_EXPENSES, CONST.SEARCH.TABLE_COLUMNS.GROUP_TOTAL]}
-                    />
-                </SearchActionsContext.Provider>
-            </SearchStateContext.Provider>
+            <SearchContext.Provider value={mockSearchContext}>
+                <WeekListItemHeader
+                    week={weekItem}
+                    onCheckboxPress={props.onCheckboxPress ?? jest.fn()}
+                    isDisabled={props.isDisabled ?? false}
+                    canSelectMultiple={props.canSelectMultiple ?? false}
+                    isSelectAllChecked={props.isSelectAllChecked ?? false}
+                    isIndeterminate={props.isIndeterminate ?? false}
+                    onDownArrowClick={props.onDownArrowClick}
+                    isExpanded={props.isExpanded ?? false}
+                    columns={props.columns ?? [CONST.SEARCH.TABLE_COLUMNS.GROUP_WEEK, CONST.SEARCH.TABLE_COLUMNS.GROUP_EXPENSES, CONST.SEARCH.TABLE_COLUMNS.GROUP_TOTAL]}
+                />
+            </SearchContext.Provider>
         </ComposeProviders>,
     );
 };

@@ -15,6 +15,7 @@ import type {Transaction} from '@src/types/onyx';
 import type {WaypointCollection} from '@src/types/onyx/Transaction';
 import type IconAsset from '@src/types/utils/IconAsset';
 import DistanceMapView from './DistanceMapView';
+import * as Expensicons from './Icon/Expensicons';
 import ImageSVG from './ImageSVG';
 import type {WayPoint} from './MapView/MapViewTypes';
 import PendingMapView from './MapView/PendingMapView';
@@ -45,7 +46,7 @@ function ConfirmedRoute({transaction, isSmallerIcon, shouldHaveBorderRadius = tr
     const theme = useTheme();
     const styles = useThemeStyles();
     const StyleUtils = useStyleUtils();
-    const expensifyIcons = useMemoizedLazyExpensifyIcons(['DotIndicator', 'DotIndicatorUnfilled', 'Location'] as const);
+    const expensifyIcons = useMemoizedLazyExpensifyIcons(['Location']);
 
     const [mapboxAccessToken] = useOnyx(ONYXKEYS.MAPBOX_ACCESS_TOKEN);
 
@@ -75,11 +76,11 @@ function ConfirmedRoute({transaction, isSmallerIcon, shouldHaveBorderRadius = tr
                     const index = getWaypointIndex(key);
                     let MarkerComponent: IconAsset;
                     if (index === 0) {
-                        MarkerComponent = expensifyIcons.DotIndicatorUnfilled;
+                        MarkerComponent = Expensicons.DotIndicatorUnfilled;
                     } else if (index === lastWaypointIndex) {
                         MarkerComponent = expensifyIcons.Location;
                     } else {
-                        MarkerComponent = expensifyIcons.DotIndicator;
+                        MarkerComponent = Expensicons.DotIndicator;
                     }
 
                     return {
@@ -90,7 +91,7 @@ function ConfirmedRoute({transaction, isSmallerIcon, shouldHaveBorderRadius = tr
                 })
                 .filter((waypoint): waypoint is WayPoint => !!waypoint);
         },
-        [getMarkerComponent, expensifyIcons.DotIndicator, expensifyIcons.DotIndicatorUnfilled, expensifyIcons.Location],
+        [getMarkerComponent, expensifyIcons.Location],
     );
 
     const waypointMarkers = getWaypointMarkers(waypoints);

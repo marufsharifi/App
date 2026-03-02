@@ -3710,30 +3710,24 @@ const staticStyles = (theme: ThemeColors) =>
         forYouEmptyStateContainer: {
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 20,
             marginTop: 20,
             marginBottom: 52,
         },
 
-        forYouEmptyStateTextContainer: {
-            alignItems: 'center',
-            gap: 8,
-            width: '100%',
-            paddingHorizontal: 20,
-        },
-
         forYouEmptyStateTitle: {
-            ...FontUtils.fontFamily.platform.EXP_NEW_KANSAS_MEDIUM,
-            fontSize: variables.fontSizeXLarge,
-            lineHeight: variables.lineHeightXXLarge,
+            ...FontUtils.fontFamily.platform.EXP_NEUE_BOLD,
+            fontSize: variables.fontSizeNormal,
+            lineHeight: variables.fontSizeNormalHeight,
+            marginTop: 20,
             textAlign: 'center',
             color: theme.text,
         },
 
-        forYouEmptyStateDescription: {
+        forYouEmptyStateSubtitle: {
             ...FontUtils.fontFamily.platform.EXP_NEUE,
-            fontSize: variables.fontSizeNormal,
-            lineHeight: variables.fontSizeNormalHeight,
+            fontSize: variables.fontSizeLabel,
+            lineHeight: 16,
+            marginTop: 2,
             textAlign: 'center',
             color: theme.textSupporting,
         },
@@ -4378,10 +4372,6 @@ const staticStyles = (theme: ThemeColors) =>
         reportPreviewBoxHoverBorder: {
             borderColor: theme.cardBG,
             backgroundColor: theme.cardBG,
-        },
-
-        reportPreviewBoxHoverBorderColor: {
-            borderColor: theme.cardBG,
         },
 
         reportContainerBorderRadius: {
@@ -5641,11 +5631,6 @@ const staticStyles = (theme: ThemeColors) =>
             borderColor: theme.border,
         },
 
-        wideRHPDropZoneContainer: {
-            width: animatedReceiptPaneRHPWidth,
-            height: '100%',
-        },
-
         wideRHPMoneyRequestReceiptViewScrollViewContainer: {
             ...spacing.pt3,
             ...spacing.pb2,
@@ -5804,9 +5789,6 @@ const staticStyles = (theme: ThemeColors) =>
         },
         paymentMethodErrorRow: {
             paddingHorizontal: variables.iconSizeMenuItem + variables.iconSizeNormal / 2,
-        },
-        transactionReceiptButton: {
-            width: variables.transactionReceiptButtonWidth,
         },
         chartHeader: {
             flexDirection: 'row',

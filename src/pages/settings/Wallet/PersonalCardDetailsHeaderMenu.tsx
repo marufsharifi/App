@@ -1,10 +1,11 @@
 import {format, parseISO} from 'date-fns';
 import React from 'react';
 import ActivityIndicator from '@components/ActivityIndicator';
+// eslint-disable-next-line no-restricted-imports
+import * as Expensicons from '@components/Icon/Expensicons';
 import MenuItem from '@components/MenuItem';
 import MenuItemWithTopDescription from '@components/MenuItemWithTopDescription';
 import OfflineWithFeedback from '@components/OfflineWithFeedback';
-import {useMemoizedLazyExpensifyIcons} from '@hooks/useLazyAsset';
 import useLocalize from '@hooks/useLocalize';
 import useThemeStyles from '@hooks/useThemeStyles';
 import {getDefaultCardName} from '@libs/CardUtils';
@@ -53,13 +54,12 @@ function PersonalCardDetailsHeaderMenu({
 }: PersonalCardDetailsHeaderMenuProps) {
     const {translate} = useLocalize();
     const styles = useThemeStyles();
-    const icons = useMemoizedLazyExpensifyIcons(['Hourglass', 'Trashcan'] as const);
 
     return (
         <>
             {!cardholder?.validated && (
                 <MenuItem
-                    icon={icons.Hourglass}
+                    icon={Expensicons.Hourglass}
                     iconStyles={styles.mln2}
                     description={translate('workspace.expensifyCard.cardPending', {name: displayName})}
                     numberOfLinesDescription={0}
@@ -163,7 +163,7 @@ function PersonalCardDetailsHeaderMenu({
             )}
             {shouldShowBreakConnection && (
                 <MenuItem
-                    icon={icons.Trashcan}
+                    icon={Expensicons.Trashcan}
                     disabled={isOffline || card?.isLoadingLastUpdated}
                     title="Break connection (Testing)"
                     onPress={onBreakConnection}

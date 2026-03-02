@@ -5,7 +5,13 @@ import type {PopoverMenuItem} from '@components/PopoverMenu';
 import type CONST from '@src/CONST';
 import type {FullScreenActionsContextType, FullScreenStateContextType} from './FullScreenContextProvider';
 
-type VolumeStateContextType = {
+type VolumeContext = {
+    /**
+     * Updates the current volume.
+     * @param newVolume The new volume value to set.
+     */
+    updateVolume: (newVolume: number) => void;
+
     /**
      * The current volume value.
      */
@@ -16,14 +22,6 @@ type VolumeStateContextType = {
      * This value is restored after unmuting.
      */
     lastNonZeroVolume: SharedValue<number>;
-};
-
-type VolumeActionsContextType = {
-    /**
-     * Updates the current volume.
-     * @param newVolume The new volume value to set.
-     */
-    updateVolume: (newVolume: number) => void;
 
     /**
      * Toggles the mute state.
@@ -31,16 +29,12 @@ type VolumeActionsContextType = {
     toggleMute: () => void;
 };
 
-type VolumeContext = VolumeStateContextType & VolumeActionsContextType;
-
-type VideoPopoverMenuStateContextType = {
+type VideoPopoverMenuContext = {
     /**
      * The items displayed in the video popover menu.
      */
     menuItems: PopoverMenuItem[];
-};
 
-type VideoPopoverMenuActionsContextType = {
     /**
      * Updates the video player reference used by the popover menu.
      * @param ref The video player ref.
@@ -64,4 +58,4 @@ type FullScreenContext = FullScreenStateContextType & FullScreenActionsContextTy
 
 type PlaybackSpeed = TupleToUnion<typeof CONST.VIDEO_PLAYER.PLAYBACK_SPEEDS>;
 
-export type {VolumeContext, VolumeStateContextType, VolumeActionsContextType, VideoPopoverMenuStateContextType, VideoPopoverMenuActionsContextType, FullScreenContext, PlaybackSpeed};
+export type {VolumeContext, VideoPopoverMenuContext, FullScreenContext, PlaybackSpeed};

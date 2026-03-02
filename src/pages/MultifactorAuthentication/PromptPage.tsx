@@ -5,9 +5,9 @@ import Button from '@components/Button';
 import FixedFooter from '@components/FixedFooter';
 import HeaderWithBackButton from '@components/HeaderWithBackButton';
 import LoadingIndicator from '@components/LoadingIndicator';
-import {DefaultCancelConfirmModal} from '@components/MultifactorAuthentication/components/Modals';
 import {useMultifactorAuthentication, useMultifactorAuthenticationActions, useMultifactorAuthenticationState, usePromptContent} from '@components/MultifactorAuthentication/Context';
 import MultifactorAuthenticationPromptContent from '@components/MultifactorAuthentication/PromptContent';
+import MultifactorAuthenticationTriggerCancelConfirmModal from '@components/MultifactorAuthentication/TriggerCancelConfirmModal';
 import ScreenWrapper from '@components/ScreenWrapper';
 import useLocalize from '@hooks/useLocalize';
 import useNetwork from '@hooks/useNetwork';
@@ -61,8 +61,6 @@ function MultifactorAuthenticationPromptPage({route}: MultifactorAuthenticationP
         return false;
     };
 
-    const CancelConfirmModal = state.scenario?.modals.cancelConfirmation ?? DefaultCancelConfirmModal;
-
     return (
         <ScreenWrapper
             testID={MultifactorAuthenticationPromptPage.displayName}
@@ -100,7 +98,8 @@ function MultifactorAuthenticationPromptPage({route}: MultifactorAuthenticationP
                     )}
                 </FixedFooter>
 
-                <CancelConfirmModal
+                <MultifactorAuthenticationTriggerCancelConfirmModal
+                    scenario={state.scenario}
                     isVisible={isCancelModalVisible}
                     onConfirm={cancelFlow}
                     onCancel={hideCancelModal}

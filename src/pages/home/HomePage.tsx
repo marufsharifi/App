@@ -30,7 +30,7 @@ function HomePage() {
     const theme = useTheme();
     const {translate} = useLocalize();
     const expensifyIcons = useMemoizedLazyExpensifyIcons(['SmartScan'] as const);
-    const {initScanRequest, PDFValidationComponent, ErrorModal, isDragDisabled} = useReceiptScanDrop();
+    const {initScanRequest, PDFValidationComponent, ErrorModal} = useReceiptScanDrop();
 
     // This hook signals that the app is ready to be opened after HomePage mounts
     // to make sure everything loads properly
@@ -40,7 +40,7 @@ function HomePage() {
     usePreloadFullScreenNavigators();
 
     return (
-        <DragAndDropProvider isDisabled={isDragDisabled}>
+        <DragAndDropProvider>
             {PDFValidationComponent}
             <ScreenWrapper
                 shouldEnablePickerAvoiding={false}
@@ -59,7 +59,6 @@ function HomePage() {
                 <TopBar
                     breadcrumbLabel={translate('common.home')}
                     shouldShowLoadingBar={false}
-                    shouldDisplayHelpButton
                 />
                 <ScrollView
                     contentContainerStyle={styles.homePageContentContainer}

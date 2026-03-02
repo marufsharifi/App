@@ -22,7 +22,8 @@ const buildFeedKeysWithAssignedCards = (allWorkspaceCards: OnyxCollection<Worksp
             continue;
         }
 
-        if (Object.keys(cards).some((k) => k !== 'cardList')) {
+        const {cardList, ...assignedCards} = cards;
+        if (Object.keys(assignedCards).length > 0) {
             const feedKey = key.replace(ONYXKEYS.COLLECTION.WORKSPACE_CARDS_LIST, '');
             result[feedKey] = true;
         }

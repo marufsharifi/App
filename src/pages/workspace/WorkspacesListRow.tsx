@@ -8,6 +8,7 @@ import type {ValueOf} from 'type-fest';
 import Avatar from '@components/Avatar';
 import Badge from '@components/Badge';
 import Icon from '@components/Icon';
+import * as Expensicons from '@components/Icon/Expensicons';
 import type {PopoverMenuItem} from '@components/PopoverMenu';
 import Text from '@components/Text';
 import TextWithTooltip from '@components/TextWithTooltip';
@@ -92,11 +93,10 @@ type BrickRoadIndicatorIconProps = {
 
 function BrickRoadIndicatorIcon({brickRoadIndicator}: BrickRoadIndicatorIconProps) {
     const theme = useTheme();
-    const icons = useMemoizedLazyExpensifyIcons(['DotIndicator'] as const);
 
     return brickRoadIndicator ? (
         <Icon
-            src={icons.DotIndicator}
+            src={Expensicons.DotIndicator}
             fill={brickRoadIndicator === CONST.BRICK_ROAD_INDICATOR_STATUS.ERROR ? theme.danger : theme.iconSuccessFill}
         />
     ) : null;
@@ -129,7 +129,7 @@ function WorkspacesListRow({
     const theme = useTheme();
     const isFocused = useIsFocused();
     const isNarrow = layoutWidth === CONST.LAYOUT_WIDTH.NARROW;
-    const icons = useMemoizedLazyExpensifyIcons(['ArrowRight', 'Hourglass'] as const);
+    const icons = useMemoizedLazyExpensifyIcons(['ArrowRight', 'Hourglass']);
     const illustrations = useMemoizedLazyIllustrations(['Mailbox', 'ShieldYellow']);
 
     const workspaceTypeIcon = useCallback(

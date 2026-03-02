@@ -11,7 +11,6 @@ import useInitialDimensions from '@hooks/useInitialWindowDimensions';
 import useSafeAreaPaddings from '@hooks/useSafeAreaPaddings';
 import useTackInputFocus from '@hooks/useTackInputFocus';
 import useThemeStyles from '@hooks/useThemeStyles';
-import useViewportOffsetTop from '@hooks/useViewportOffsetTop';
 import useWindowDimensions from '@hooks/useWindowDimensions';
 import {isMobile, isMobileWebKit, isSafari} from '@libs/Browser';
 import type {ForwardedFSClassProps} from '@libs/Fullstory/types';
@@ -120,7 +119,6 @@ function ScreenWrapperContainer({
     const {isBlurred} = useInputBlurState();
     const {setIsBlurred} = useInputBlurActions();
     const isAvoidingViewportScroll = useTackInputFocus(isFocused && shouldEnableMaxHeight && shouldAvoidScrollOnVirtualViewport && isMobileWebKit());
-    const viewportOffsetTop = useViewportOffsetTop();
 
     const isUsingEdgeToEdgeMode = enableEdgeToEdgeBottomSafeAreaPadding !== undefined;
     const shouldKeyboardOffsetBottomSafeAreaPadding = shouldKeyboardOffsetBottomSafeAreaPaddingProp ?? isUsingEdgeToEdgeMode;
@@ -215,7 +213,7 @@ function ScreenWrapperContainer({
         >
             <View
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-                style={[shouldEnableMaxHeight && {marginTop: viewportOffsetTop}, style, paddingTopStyle]}
+                style={[style, paddingTopStyle]}
                 // eslint-disable-next-line react/jsx-props-no-spreading
                 {...keyboardDismissPanResponder.panHandlers}
             >

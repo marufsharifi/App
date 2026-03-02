@@ -52,9 +52,7 @@ describe('Middleware', () => {
                 lastUpdateID: 100,
                 previousUpdateID: 99,
                 transactionsPending3DSReview: {
-                    // an ID map key is not a name!
-                    // eslint-disable-next-line @typescript-eslint/naming-convention
-                    1234: {amount: 500, currency: 'USD', created: '2026-02-23', expires: '2026-02-24', lastFourPAN: '1234', merchant: 'TestMerchant', transactionID: '1234'},
+                    txn123: {amount: 500, currency: 'USD', created: '2026-02-23', expires: '2026-02-24', lastFourPAN: 1234, merchant: 'TestMerchant'},
                 },
             };
             jest.spyOn(HttpUtils, 'xhr').mockResolvedValueOnce(mockResponse);

@@ -252,7 +252,6 @@ key "key"
       / submitted
       / approved
       / paid
-      / exportedTo
       / exported
       / posted
       / withdrawn

@@ -3124,71 +3124,58 @@ describe('SearchUIUtils', () => {
             expect(result.end).toBe('2025-06-20');
         });
 
-        // These tests use LAST_MONTH date preset which resolves relative to the current date,
-        // so we freeze the clock to February 2026 to ensure LAST_MONTH always means January 2026.
-        describe('date preset intersection with frozen clock', () => {
-            beforeEach(() => {
-                jest.useFakeTimers();
-                jest.setSystemTime(new Date('2026-02-15T12:00:00Z'));
-            });
+        it('should intersect date preset with additional constraints instead of overwriting', () => {
+            // Test that when combining a date preset (EQUAL_TO) with additional constraints,
+            // we intersect the ranges (take max for start, min for end) rather than overwriting
+            const yearDateRange = DateUtils.getYearDateRange(2026);
+            const dateFilter = {
+                key: CONST.SEARCH.SYNTAX_FILTER_KEYS.DATE,
+                filters: [
+                    {
+                        operator: CONST.SEARCH.SYNTAX_OPERATORS.EQUAL_TO,
+                        value: CONST.SEARCH.DATE_PRESETS.LAST_MONTH, // e.g., January 2026: 2026-01-01 to 2026-01-31
+                    },
+                    {
+                        operator: CONST.SEARCH.SYNTAX_OPERATORS.GREATER_THAN_OR_EQUAL_TO,
+                        value: '2025-04-01', // Earlier than preset start
+                    },
+                ],
+            };
 
-            afterEach(() => {
-                jest.useRealTimers();
-            });
+            const result = SearchUIUtils.adjustTimeRangeToDateFilters(yearDateRange, [dateFilter]);
 
-            it('should intersect date preset with additional constraints instead of overwriting', () => {
-                // Test that when combining a date preset (EQUAL_TO) with additional constraints,
-                // we intersect the ranges (take max for start, min for end) rather than overwriting
-                const yearDateRange = DateUtils.getYearDateRange(2026);
-                const dateFilter = {
-                    key: CONST.SEARCH.SYNTAX_FILTER_KEYS.DATE,
-                    filters: [
-                        {
-                            operator: CONST.SEARCH.SYNTAX_OPERATORS.EQUAL_TO,
-                            value: CONST.SEARCH.DATE_PRESETS.LAST_MONTH, // January 2026: 2026-01-01 to 2026-01-31
-                        },
-                        {
-                            operator: CONST.SEARCH.SYNTAX_OPERATORS.GREATER_THAN_OR_EQUAL_TO,
-                            value: '2025-04-01', // Earlier than preset start
-                        },
-                    ],
-                };
+            // Should intersect: max(preset start, constraint start) = max(2026-01-01, 2025-04-01) = 2026-01-01
+            // The preset start should be preserved, not overwritten by the earlier constraint
+            expect(result.start).toBe('2026-01-01');
+            // End should remain the preset end (2026-01-31)
+            expect(result.end).toBe('2026-01-31');
+        });
 
-                const result = SearchUIUtils.adjustTimeRangeToDateFilters(yearDateRange, [dateFilter]);
+        it('should intersect date preset end limit with additional constraints', () => {
+            // Test that when combining a date preset with an end constraint,
+            // we take the minimum (earliest) end date to intersect ranges
+            const yearDateRange = DateUtils.getYearDateRange(2026);
+            const dateFilter = {
+                key: CONST.SEARCH.SYNTAX_FILTER_KEYS.DATE,
+                filters: [
+                    {
+                        operator: CONST.SEARCH.SYNTAX_OPERATORS.EQUAL_TO,
+                        value: CONST.SEARCH.DATE_PRESETS.LAST_MONTH, // e.g., January 2026: 2026-01-01 to 2026-01-31
+                    },
+                    {
+                        operator: CONST.SEARCH.SYNTAX_OPERATORS.LOWER_THAN_OR_EQUAL_TO,
+                        value: '2026-01-15', // Earlier than preset end
+                    },
+                ],
+            };
 
-                // Should intersect: max(preset start, constraint start) = max(2026-01-01, 2025-04-01) = 2026-01-01
-                // The preset start should be preserved, not overwritten by the earlier constraint
-                expect(result.start).toBe('2026-01-01');
-                // End should remain the preset end (2026-01-31)
-                expect(result.end).toBe('2026-01-31');
-            });
+            const result = SearchUIUtils.adjustTimeRangeToDateFilters(yearDateRange, [dateFilter]);
 
-            it('should intersect date preset end limit with additional constraints', () => {
-                // Test that when combining a date preset with an end constraint,
-                // we take the minimum (earliest) end date to intersect ranges
-                const yearDateRange = DateUtils.getYearDateRange(2026);
-                const dateFilter = {
-                    key: CONST.SEARCH.SYNTAX_FILTER_KEYS.DATE,
-                    filters: [
-                        {
-                            operator: CONST.SEARCH.SYNTAX_OPERATORS.EQUAL_TO,
-                            value: CONST.SEARCH.DATE_PRESETS.LAST_MONTH, // January 2026: 2026-01-01 to 2026-01-31
-                        },
-                        {
-                            operator: CONST.SEARCH.SYNTAX_OPERATORS.LOWER_THAN_OR_EQUAL_TO,
-                            value: '2026-01-15', // Earlier than preset end
-                        },
-                    ],
-                };
-
-                const result = SearchUIUtils.adjustTimeRangeToDateFilters(yearDateRange, [dateFilter]);
-
-                // Start should remain the preset start (2026-01-01)
-                expect(result.start).toBe('2026-01-01');
-                // Should intersect: min(preset end, constraint end) = min(2026-01-31, 2026-01-15) = 2026-01-15
-                // The constraint end should be used (earlier date)
-                expect(result.end).toBe('2026-01-15');
-            });
+            // Start should remain the preset start (2026-01-01)
+            expect(result.start).toBe('2026-01-01');
+            // Should intersect: min(preset end, constraint end) = min(2026-01-31, 2026-01-15) = 2026-01-15
+            // The constraint end should be used (earlier date)
+            expect(result.end).toBe('2026-01-15');
         });
 
         it('should correctly intersect multiple date filters (GREATER_THAN and LOWER_THAN) when expanding quarter groups', () => {
@@ -4849,7 +4836,7 @@ describe('SearchUIUtils', () => {
             expect(menuItemKeys).toContain(CONST.SEARCH.SEARCH_KEYS.EXPORT);
         });
 
-        it('should show monthly accrual and reconciliation sections with expected items', () => {
+        it('should show accounting section with statements, unapproved cash, unapproved card, and reconciliation items', () => {
             const mockPolicies = {
                 policy1: {
                     id: 'policy1',
@@ -4901,22 +4888,15 @@ describe('SearchUIUtils', () => {
                 false,
             );
 
-            const monthlyAccrualSection = sections.find((section) => section.translationPath === 'search.monthlyAccrual');
-            expect(monthlyAccrualSection).toBeDefined();
-            expect(monthlyAccrualSection?.menuItems.length).toBeGreaterThan(0);
+            const accountingSection = sections.find((section) => section.translationPath === 'workspace.common.accounting');
+            expect(accountingSection).toBeDefined();
+            expect(accountingSection?.menuItems.length).toBeGreaterThan(0);
 
-            const monthlyAccrualKeys = monthlyAccrualSection?.menuItems.map((item) => item.key) ?? [];
-            expect(monthlyAccrualKeys).toContain(CONST.SEARCH.SEARCH_KEYS.UNAPPROVED_CASH);
-            expect(monthlyAccrualKeys).toContain(CONST.SEARCH.SEARCH_KEYS.UNAPPROVED_CARD);
-
-            const reconciliationSection = sections.find((section) => section.translationPath === 'search.reconciliation');
-            expect(reconciliationSection).toBeDefined();
-            expect(reconciliationSection?.menuItems.length).toBeGreaterThan(0);
-
-            const reconciliationKeys = reconciliationSection?.menuItems.map((item) => item.key) ?? [];
-            expect(reconciliationKeys).toContain(CONST.SEARCH.SEARCH_KEYS.STATEMENTS);
-            expect(reconciliationKeys).toContain(CONST.SEARCH.SEARCH_KEYS.EXPENSIFY_CARD);
-            expect(reconciliationKeys).toContain(CONST.SEARCH.SEARCH_KEYS.RECONCILIATION);
+            const menuItemKeys = accountingSection?.menuItems.map((item) => item.key) ?? [];
+            expect(menuItemKeys).toContain(CONST.SEARCH.SEARCH_KEYS.STATEMENTS);
+            expect(menuItemKeys).toContain(CONST.SEARCH.SEARCH_KEYS.UNAPPROVED_CASH);
+            expect(menuItemKeys).toContain(CONST.SEARCH.SEARCH_KEYS.UNAPPROVED_CARD);
+            expect(menuItemKeys).toContain(CONST.SEARCH.SEARCH_KEYS.RECONCILIATION);
         });
 
         it('should show saved section when there are saved searches', () => {
@@ -5029,7 +5009,7 @@ describe('SearchUIUtils', () => {
             expect(todoSection).toBeUndefined();
         });
 
-        it('should not show monthly accrual or reconciliation sections when user has no admin permissions or card feeds', () => {
+        it('should not show accounting section when user has no admin permissions or card feeds', () => {
             const mockPolicies = {
                 policy1: {
                     id: 'policy1',
@@ -5057,10 +5037,8 @@ describe('SearchUIUtils', () => {
                 false,
             );
 
-            const monthlyAccrualSection = sections.find((section) => section.translationPath === 'search.monthlyAccrual');
-            const reconciliationSection = sections.find((section) => section.translationPath === 'search.reconciliation');
-            expect(monthlyAccrualSection).toBeUndefined();
-            expect(reconciliationSection).toBeUndefined();
+            const accountingSection = sections.find((section) => section.translationPath === 'workspace.common.accounting');
+            expect(accountingSection).toBeUndefined();
         });
 
         it('should show reconciliation for ACH-only scenario (payments enabled, active VBBA, reimburser set, areExpensifyCardsEnabled = false)', () => {
@@ -5090,15 +5068,14 @@ describe('SearchUIUtils', () => {
             const {result: icons} = renderHook(() => useMemoizedLazyExpensifyIcons(['Document', 'Send', 'ThumbsUp']));
             const sections = SearchUIUtils.createTypeMenuSections(icons.current, adminEmail, adminAccountID, {}, undefined, mockPolicies, {}, false, undefined, false);
 
-            const reconciliationSection = sections.find((section) => section.translationPath === 'search.reconciliation');
-            expect(reconciliationSection).toBeDefined();
+            const accountingSection = sections.find((section) => section.translationPath === 'workspace.common.accounting');
+            expect(accountingSection).toBeDefined();
 
-            const menuItemKeys = reconciliationSection?.menuItems.map((item) => item.key) ?? [];
-            expect(menuItemKeys).not.toContain(CONST.SEARCH.SEARCH_KEYS.EXPENSIFY_CARD);
+            const menuItemKeys = accountingSection?.menuItems.map((item) => item.key) ?? [];
             expect(menuItemKeys).toContain(CONST.SEARCH.SEARCH_KEYS.RECONCILIATION);
         });
 
-        it('should show only expensify card in reconciliation for card-only scenario without card feeds', () => {
+        it('should not show reconciliation for card-only scenario without card feeds (areExpensifyCardsEnabled = true but no card feeds)', () => {
             const mockPolicies = {
                 policy1: {
                     id: 'policy1',
@@ -5116,13 +5093,11 @@ describe('SearchUIUtils', () => {
             const mockCardFeedsByPolicy: Record<string, CardFeedForDisplay[]> = {};
             const {result: icons} = renderHook(() => useMemoizedLazyExpensifyIcons(['Document', 'Send', 'ThumbsUp']));
             const sections = SearchUIUtils.createTypeMenuSections(icons.current, adminEmail, adminAccountID, mockCardFeedsByPolicy, undefined, mockPolicies, {}, false, undefined, false);
-            const reconciliationSection = sections.find((section) => section.translationPath === 'search.reconciliation');
-            expect(reconciliationSection).toBeDefined();
+            const accountingSection = sections.find((section) => section.translationPath === 'workspace.common.accounting');
 
-            const menuItemKeys = reconciliationSection?.menuItems.map((item) => item.key) ?? [];
-            expect(menuItemKeys).toContain(CONST.SEARCH.SEARCH_KEYS.EXPENSIFY_CARD);
-            expect(menuItemKeys).not.toContain(CONST.SEARCH.SEARCH_KEYS.RECONCILIATION);
-            expect(menuItemKeys).not.toContain(CONST.SEARCH.SEARCH_KEYS.STATEMENTS);
+            expect(accountingSection).toBeDefined();
+            const menuItemKeys = accountingSection?.menuItems.map((item) => item.key) ?? [];
+            expect(menuItemKeys).toContain(CONST.SEARCH.SEARCH_KEYS.RECONCILIATION);
         });
 
         it('should generate correct routes', () => {
@@ -5131,7 +5106,7 @@ describe('SearchUIUtils', () => {
                 .map((section) => section.menuItems)
                 .flat();
 
-            const expectedQueries = ['type:expense-report sortBy:date sortOrder:desc', 'type:expense sortBy:date sortOrder:desc', 'type:chat sortBy:date sortOrder:desc'];
+            const expectedQueries = ['type:expense sortBy:date sortOrder:desc', 'type:expense-report sortBy:date sortOrder:desc', 'type:chat sortBy:date sortOrder:desc'];
 
             for (const [index, item] of menuItems.entries()) {
                 expect(item.searchQuery).toStrictEqual(expectedQueries.at(index));
@@ -5731,43 +5706,6 @@ describe('SearchUIUtils', () => {
             expect(searchQuery).toContain(`sortBy:${CONST.SEARCH.TABLE_COLUMNS.GROUP_MONTH}`);
             expect(searchQuery).toContain(`sortOrder:${CONST.SEARCH.SORT_ORDER.ASC}`);
         });
-
-        test('Should return Top Merchants search query with pie view', () => {
-            const suggestedSearches = SearchUIUtils.getSuggestedSearches(adminAccountID, undefined, undefined);
-            const topMerchantsSearch = suggestedSearches[CONST.SEARCH.SEARCH_KEYS.TOP_MERCHANTS];
-
-            expect(topMerchantsSearch).toBeDefined();
-            const searchQueryJSON = topMerchantsSearch.searchQueryJSON;
-
-            expect(searchQueryJSON).toBeDefined();
-            expect(searchQueryJSON?.view).toBe(CONST.SEARCH.VIEW.PIE);
-        });
-
-        test('Should return Top Merchants search query string with pie view', () => {
-            const suggestedSearches = SearchUIUtils.getSuggestedSearches(adminAccountID, undefined, undefined);
-            const topMerchantsSearch = suggestedSearches[CONST.SEARCH.SEARCH_KEYS.TOP_MERCHANTS];
-
-            expect(topMerchantsSearch).toBeDefined();
-            const searchQuery = topMerchantsSearch.searchQuery;
-
-            expect(searchQuery).toContain(`view:${CONST.SEARCH.VIEW.PIE}`);
-        });
-    });
-
-    describe('Test getSuggestedSearches sort defaults', () => {
-        test('Should default Top Categories to sortBy groupCategory and sortOrder asc', () => {
-            const suggestedSearches = SearchUIUtils.getSuggestedSearches(adminAccountID);
-            const topCategories = suggestedSearches[CONST.SEARCH.SEARCH_KEYS.TOP_CATEGORIES];
-            expect(topCategories.searchQueryJSON?.sortBy).toBe(CONST.SEARCH.TABLE_COLUMNS.GROUP_CATEGORY);
-            expect(topCategories.searchQueryJSON?.sortOrder).toBe(CONST.SEARCH.SORT_ORDER.ASC);
-        });
-
-        test('Should default Top Merchants to sortBy groupMerchant and sortOrder asc', () => {
-            const suggestedSearches = SearchUIUtils.getSuggestedSearches(adminAccountID);
-            const topMerchants = suggestedSearches[CONST.SEARCH.SEARCH_KEYS.TOP_MERCHANTS];
-            expect(topMerchants.searchQueryJSON?.sortBy).toBe(CONST.SEARCH.TABLE_COLUMNS.GROUP_MERCHANT);
-            expect(topMerchants.searchQueryJSON?.sortOrder).toBe(CONST.SEARCH.SORT_ORDER.ASC);
-        });
     });
 
     describe('Test getColumnsToShow', () => {
@@ -6170,25 +6108,6 @@ describe('SearchUIUtils', () => {
             // For one-transaction reports (isOneTransactionReport = true), navigation goes to the parent report (item.reportID)
             // instead of the transaction thread report
             expect(Navigation.navigate).toHaveBeenCalledWith(ROUTES.SEARCH_REPORT.getRoute({reportID: transactionListItem.reportID, backTo}));
-        });
-
-        test('Should fallback to childReportID from IOU action when transaction thread report is not in Onyx', async () => {
-            const childReportID = 'child-thread-456';
-            // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
-            const multiTransactionItem = transactionsListItems.at(2) as TransactionListItemType;
-            const iouActionWithChild = {
-                ...reportAction3,
-                childReportID,
-            };
-
-            await Onyx.set(`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${reportID3}`, {
-                [iouActionWithChild.reportActionID]: iouActionWithChild,
-            });
-            await waitForBatchedUpdates();
-
-            SearchUIUtils.createAndOpenSearchTransactionThread(multiTransactionItem, introSelectedData, backTo, undefined, undefined, true);
-
-            expect(Navigation.navigate).toHaveBeenCalledWith(ROUTES.SEARCH_REPORT.getRoute({reportID: childReportID, backTo}));
         });
 
         test('Should pass introSelected to createTransactionThreadReport when creating thread', () => {

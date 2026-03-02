@@ -128,9 +128,6 @@ const FILTER_KEYS = {
     EXPORTER_NOT: 'exporterNot',
     EXPORTER: 'exporter',
 
-    EXPORTED_TO_NOT: 'exportedToNot',
-    EXPORTED_TO: 'exportedTo',
-
     IN_NOT: 'inNot',
     IN: 'in',
 
@@ -252,8 +249,6 @@ const ALLOWED_TYPE_FILTERS: Record<string, Set<string>> = {
         FILTER_KEYS.EXPORTED_BEFORE,
         FILTER_KEYS.EXPORTER,
         FILTER_KEYS.EXPORTER_NOT,
-        FILTER_KEYS.EXPORTED_TO,
-        FILTER_KEYS.EXPORTED_TO_NOT,
         FILTER_KEYS.GROUP_BY,
         FILTER_KEYS.VIEW,
         FILTER_KEYS.ACTION,
@@ -323,8 +318,6 @@ const ALLOWED_TYPE_FILTERS: Record<string, Set<string>> = {
         FILTER_KEYS.EXPORTED_ON,
         FILTER_KEYS.EXPORTED_NOT,
         FILTER_KEYS.EXPORTER,
-        FILTER_KEYS.EXPORTED_TO,
-        FILTER_KEYS.EXPORTED_TO_NOT,
         FILTER_KEYS.ACTION,
         FILTER_KEYS.ACTION_NOT,
         FILTER_KEYS.WITHDRAWAL_ID,
@@ -483,8 +476,6 @@ const ALLOWED_TYPE_FILTERS: Record<string, Set<string>> = {
         FILTER_KEYS.EXPORTED_BEFORE,
         FILTER_KEYS.EXPORTER,
         FILTER_KEYS.EXPORTER_NOT,
-        FILTER_KEYS.EXPORTED_TO,
-        FILTER_KEYS.EXPORTED_TO_NOT,
         FILTER_KEYS.ACTION,
         FILTER_KEYS.ACTION_NOT,
         FILTER_KEYS.PURCHASE_AMOUNT_EQUAL_TO,
@@ -644,9 +635,6 @@ type SearchAdvancedFiltersForm = Form<
 
         [FILTER_KEYS.EXPORTER]: string[];
         [FILTER_KEYS.EXPORTER_NOT]: string[];
-
-        [FILTER_KEYS.EXPORTED_TO]: string[];
-        [FILTER_KEYS.EXPORTED_TO_NOT]: string[];
 
         [FILTER_KEYS.TO]: string[];
         [FILTER_KEYS.TO_NOT]: string[];
