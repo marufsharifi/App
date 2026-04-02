@@ -1,6 +1,7 @@
 import {Group, Text as SkiaText, vec} from '@shopify/react-native-skia';
 import type {SkFont} from '@shopify/react-native-skia';
 import React, {useMemo} from 'react';
+import type {AxisLabelRenderer} from 'victory-native';
 import {AXIS_LABEL_GAP} from '@components/Charts/constants';
 import type {LabelRotation} from '@components/Charts/types';
 import {measureTextWidth, rotatedLabelCenterCorrection, rotatedLabelYOffset} from '@components/Charts/utils';
@@ -21,6 +22,9 @@ type ChartXAxisLabelsProps = {
     /** Fill color for the label text. */
     labelColor: string;
 
+    /** Optional Paragraph renderer for CJK-capable labels. */
+    labelRenderer?: AxisLabelRenderer;
+
     /** Maps a data-point index to its x-pixel position on the chart. */
     xScale: (value: number) => number;
 
@@ -31,7 +35,7 @@ type ChartXAxisLabelsProps = {
     centerRotatedLabels?: boolean;
 };
 
-function ChartXAxisLabels({labels, labelRotation, labelSkipInterval, font, labelColor, xScale, chartBoundsBottom, centerRotatedLabels = false}: ChartXAxisLabelsProps) {
+function ChartXAxisLabels({labels, labelRotation, labelSkipInterval, font, labelColor, labelRenderer, xScale, chartBoundsBottom, centerRotatedLabels = false}: ChartXAxisLabelsProps) {
     const angleRad = (Math.abs(labelRotation) * Math.PI) / 180;
 
     const fontMetrics = font.getMetrics();
@@ -39,9 +43,15 @@ function ChartXAxisLabels({labels, labelRotation, labelSkipInterval, font, label
     const descent = Math.abs(fontMetrics.descent);
     const correction = rotatedLabelCenterCorrection(ascent, descent, angleRad);
 
-    const labelWidths = useMemo(() => {
-        return labels.map((label) => measureTextWidth(label, font));
-    }, [labels, font]);
+    const labelMeasurements = useMemo(
+        () =>
+            labels.map((label) => ({
+                width: measureTextWidth(label, font, labelRenderer),
+                height: labelRenderer?.measureText(label).height ?? font.getSize(),
+            })),
+        [font, labelRenderer, labels],
+    );
+    const labelWidths = labelMeasurements.map((measurement) => measurement.width);
 
     // Centered labels extend upward by (maxWidth/2)*sin(angle) from the anchor;
     // push the anchor down so the top of the bounding box clears chartBoundsBottom.
@@ -54,9 +64,24 @@ function ChartXAxisLabels({labels, labelRotation, labelSkipInterval, font, label
         }
 
         const tickX = xScale(i);
-        const labelWidth = labelWidths.at(i) ?? 0;
+        const labelWidth = labelMeasurements.at(i)?.width ?? 0;
+        const labelHeight = labelMeasurements.at(i)?.height ?? font.getSize();
 
         if (angleRad === 0) {
+            if (labelRenderer) {
+                return (
+                    <React.Fragment key={`x-label-${label}-${i}`}>
+                        {labelRenderer.render({
+                            text: label,
+                            color: labelColor,
+                            x: tickX - labelWidth / 2,
+                            y: chartBoundsBottom + AXIS_LABEL_GAP,
+                            width: labelWidth,
+                            height: labelHeight,
+                        })}
+                    </React.Fragment>
+                );
+            }
             return (
                 <SkiaText
                     key={`x-label-${label}`}
@@ -70,21 +95,32 @@ function ChartXAxisLabels({labels, labelRotation, labelSkipInterval, font, label
         }
 
         const textX = centerRotatedLabels ? tickX - labelWidth / 2 : tickX - labelWidth;
-        const origin = vec(tickX, labelY);
+        const origin = labelRenderer ? vec(textX + labelWidth / 2, chartBoundsBottom + AXIS_LABEL_GAP + labelHeight / 2) : vec(tickX, labelY);
 
         return (
             <Group
                 key={`x-label-${label}`}
                 origin={origin}
-                transform={[{translateX: correction}, {rotate: -angleRad}]}
+                transform={labelRenderer ? [{rotate: -angleRad}] : [{translateX: correction}, {rotate: -angleRad}]}
             >
-                <SkiaText
-                    x={textX}
-                    y={labelY}
-                    text={label}
-                    font={font}
-                    color={labelColor}
-                />
+                {labelRenderer ? (
+                    labelRenderer.render({
+                        text: label,
+                        color: labelColor,
+                        x: textX,
+                        y: chartBoundsBottom + AXIS_LABEL_GAP,
+                        width: labelWidth,
+                        height: labelHeight,
+                    })
+                ) : (
+                    <SkiaText
+                        x={textX}
+                        y={labelY}
+                        text={label}
+                        font={font}
+                        color={labelColor}
+                    />
+                )}
             </Group>
         );
     });

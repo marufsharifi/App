@@ -20,7 +20,7 @@ import {
 } from '@components/Charts/constants';
 import fontSource from '@components/Charts/font';
 import type {ComputeGeometryFn, HitTestArgs} from '@components/Charts/hooks';
-import {useChartInteractions, useChartLabelFormats, useChartLabelLayout, useDynamicYDomain, useLabelHitTesting, useTooltipData} from '@components/Charts/hooks';
+import {useChartInteractions, useChartLabelFormats, useChartLabelLayout, useChartParagraphLabelRenderer, useDynamicYDomain, useLabelHitTesting, useTooltipData} from '@components/Charts/hooks';
 import type {CartesianChartProps, ChartDataPoint} from '@components/Charts/types';
 import {calculateMinDomainPadding, DEFAULT_CHART_COLOR, getChartColor, rotatedLabelYOffset} from '@components/Charts/utils';
 import useTheme from '@hooks/useTheme';
@@ -77,6 +77,7 @@ function BarChartContent({data, isLoading, yAxisUnit, yAxisUnitPosition = 'left'
     const theme = useTheme();
     const styles = useThemeStyles();
     const font = useFont(fontSource, variables.iconSizeExtraSmall);
+    const paragraphLabelRenderer = useChartParagraphLabelRenderer(variables.iconSizeExtraSmall);
     const [chartWidth, setChartWidth] = useState(0);
     const [barAreaWidth, setBarAreaWidth] = useState(0);
     const [boundsLeft, setBoundsLeft] = useState(0);
@@ -118,6 +119,7 @@ function BarChartContent({data, isLoading, yAxisUnit, yAxisUnitPosition = 'left'
     const {labelRotation, labelSkipInterval, truncatedLabels, xAxisLabelHeight} = useChartLabelLayout({
         data,
         font,
+        labelRenderer: paragraphLabelRenderer,
         tickSpacing: barAreaWidth > 0 ? barAreaWidth / data.length : 0,
         labelAreaWidth: barAreaWidth,
         firstTickLeftSpace: boundsLeft + domainPadding.left * paddingScale,
@@ -137,6 +139,7 @@ function BarChartContent({data, isLoading, yAxisUnit, yAxisUnitPosition = 'left'
 
     const {isCursorOverLabel, findLabelCursorX, updateTickPositions} = useLabelHitTesting({
         font,
+        labelRenderer: paragraphLabelRenderer,
         truncatedLabels,
         labelRotation,
         labelSkipInterval,
@@ -220,6 +223,7 @@ function BarChartContent({data, isLoading, yAxisUnit, yAxisUnitPosition = 'left'
                 labelRotation={labelRotation}
                 labelSkipInterval={labelSkipInterval}
                 font={font}
+                labelRenderer={paragraphLabelRenderer}
                 labelColor={theme.textSupporting}
                 xScale={args.xScale}
                 chartBoundsBottom={args.chartBounds.bottom}
@@ -270,6 +274,7 @@ function BarChartContent({data, isLoading, yAxisUnit, yAxisUnitPosition = 'left'
                         yAxis={[
                             {
                                 font,
+                                labelRenderer: paragraphLabelRenderer,
                                 labelColor: theme.textSupporting,
                                 formatYLabel: formatValue,
                                 tickCount: Y_AXIS_TICK_COUNT,

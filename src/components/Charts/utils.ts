@@ -1,4 +1,5 @@
 import type {SkFont} from '@shopify/react-native-skia';
+import type {AxisLabelRenderer} from 'victory-native';
 import colors from '@styles/theme/colors';
 import {ELLIPSIS, LABEL_PADDING, LABEL_ROTATIONS, PIE_CHART_TOOLTIP_RADIUS_DISTANCE, SIN_45} from './constants';
 import type {ChartDataPoint, LabelRotation, PieSlice} from './types';
@@ -48,7 +49,10 @@ const DEFAULT_CHART_COLOR = getChartColor(5);
  * Measure pixel width of a string via glyph widths.
  * (measureText is not implemented on React Native Web)
  */
-function measureTextWidth(text: string, font: SkFont): number {
+function measureTextWidth(text: string, font: SkFont, labelRenderer?: AxisLabelRenderer): number {
+    if (labelRenderer) {
+        return labelRenderer?.measureText(text)?.width || 0;
+    }
     const glyphIDs = font.getGlyphIDs(text);
     return font.getGlyphWidths(glyphIDs).reduce((sum, w) => sum + w, 0);
 }

@@ -1,4 +1,5 @@
 import type {SkFont} from '@shopify/react-native-skia';
+import type {AxisLabelRenderer} from 'victory-native';
 import {ELLIPSIS, LABEL_PADDING, LABEL_ROTATIONS, MIN_TRUNCATED_CHARS, SIN_45} from '@components/Charts/constants';
 import type {ChartDataPoint, LabelRotation} from '@components/Charts/types';
 import {edgeLabelsFit, edgeMaxLabelWidth, effectiveHeight, effectiveWidth, maxVisibleCount, measureTextWidth, truncateLabel} from '@components/Charts/utils';
@@ -9,6 +10,9 @@ type LabelLayoutConfig = {
 
     /** Skia font used for measuring label text widths. */
     font: SkFont | null;
+
+    /** Optional renderer used for CJK-aware label measurement. */
+    labelRenderer?: AxisLabelRenderer;
 
     /** Distance in pixels between adjacent tick marks. */
     tickSpacing: number;
@@ -26,15 +30,15 @@ type LabelLayoutConfig = {
     allowTightDiagonalPacking?: boolean;
 };
 
-function useChartLabelLayout({data, font, tickSpacing, labelAreaWidth, firstTickLeftSpace = Infinity, lastTickRightSpace = Infinity, allowTightDiagonalPacking = false}: LabelLayoutConfig) {
+function useChartLabelLayout({data, font, labelRenderer, tickSpacing, labelAreaWidth, firstTickLeftSpace = Infinity, lastTickRightSpace = Infinity, allowTightDiagonalPacking = false}: LabelLayoutConfig) {
     if (!font || data.length === 0 || tickSpacing <= 0 || labelAreaWidth <= 0) {
         return {labelRotation: LABEL_ROTATIONS.HORIZONTAL, labelSkipInterval: 1, truncatedLabels: [] as string[]};
     }
 
     const fontMetrics = font.getMetrics();
     const lineHeight = Math.abs(fontMetrics.descent) + Math.abs(fontMetrics.ascent);
-    const ellipsisWidth = measureTextWidth(ELLIPSIS, font);
-    const labelWidths = data.map((point) => measureTextWidth(point.label, font));
+    const ellipsisWidth = measureTextWidth(ELLIPSIS, font, labelRenderer);
+    const labelWidths = data.map((point) => measureTextWidth(point.label, font, labelRenderer));
     const maxLabelWidth = Math.max(...labelWidths);
     const firstLabelWidth = labelWidths.at(0) ?? 0;
     const lastLabelWidth = labelWidths.at(-1) ?? 0;
@@ -43,14 +47,14 @@ function useChartLabelLayout({data, font, tickSpacing, labelAreaWidth, firstTick
             if (point.label.length <= MIN_TRUNCATED_CHARS) {
                 return labelWidths.at(index) ?? 0;
             }
-            return measureTextWidth(point.label.slice(0, MIN_TRUNCATED_CHARS) + ELLIPSIS, font);
+            return measureTextWidth(point.label.slice(0, MIN_TRUNCATED_CHARS) + ELLIPSIS, font, labelRenderer);
         }),
     );
 
     const firstLabel = data.at(0)?.label ?? '';
     const lastLabel = data.at(-1)?.label ?? '';
-    const firstMinTrunc = firstLabel.length <= MIN_TRUNCATED_CHARS ? firstLabelWidth : measureTextWidth(firstLabel.slice(0, MIN_TRUNCATED_CHARS) + ELLIPSIS, font);
-    const lastMinTrunc = lastLabel.length <= MIN_TRUNCATED_CHARS ? lastLabelWidth : measureTextWidth(lastLabel.slice(0, MIN_TRUNCATED_CHARS) + ELLIPSIS, font);
+    const firstMinTrunc = firstLabel.length <= MIN_TRUNCATED_CHARS ? firstLabelWidth : measureTextWidth(firstLabel.slice(0, MIN_TRUNCATED_CHARS) + ELLIPSIS, font, labelRenderer);
+    const lastMinTrunc = lastLabel.length <= MIN_TRUNCATED_CHARS ? lastLabelWidth : measureTextWidth(lastLabel.slice(0, MIN_TRUNCATED_CHARS) + ELLIPSIS, font, labelRenderer);
 
     // Pick rotation (prefer 0° → 45° → 90°)
     let rotation: LabelRotation = LABEL_ROTATIONS.VERTICAL;
@@ -95,7 +99,7 @@ function useChartLabelLayout({data, font, tickSpacing, labelAreaWidth, firstTick
     });
 
     // Compute skip interval (only at 90°)
-    const finalWidths = finalLabels.map((label) => measureTextWidth(label, font));
+    const finalWidths = finalLabels.map((label) => measureTextWidth(label, font, labelRenderer));
     const finalMaxWidth = Math.max(...finalWidths);
     let skipInterval = 1;
     if (rotation === LABEL_ROTATIONS.VERTICAL) {

@@ -22,7 +22,7 @@ import {
 } from '@components/Charts/constants';
 import fontSource from '@components/Charts/font';
 import type {ComputeGeometryFn, HitTestArgs} from '@components/Charts/hooks';
-import {useChartInteractions, useChartLabelFormats, useChartLabelLayout, useDynamicYDomain, useLabelHitTesting, useTooltipData} from '@components/Charts/hooks';
+import {useChartInteractions, useChartLabelFormats, useChartLabelLayout, useChartParagraphLabelRenderer, useDynamicYDomain, useLabelHitTesting, useTooltipData} from '@components/Charts/hooks';
 import type {CartesianChartProps, ChartDataPoint} from '@components/Charts/types';
 import {calculateMinDomainPadding, DEFAULT_CHART_COLOR, measureTextWidth, rotatedLabelYOffset} from '@components/Charts/utils';
 import useTheme from '@hooks/useTheme';
@@ -76,6 +76,7 @@ function LineChartContent({data, isLoading, yAxisUnit, yAxisUnitPosition = 'left
     const theme = useTheme();
     const styles = useThemeStyles();
     const font = useFont(fontSource, variables.iconSizeExtraSmall);
+    const paragraphLabelRenderer = useChartParagraphLabelRenderer(variables.iconSizeExtraSmall);
     const [chartWidth, setChartWidth] = useState(0);
     const [plotAreaWidth, setPlotAreaWidth] = useState(0);
     const [boundsLeft, setBoundsLeft] = useState(0);
@@ -114,8 +115,8 @@ function LineChartContent({data, isLoading, yAxisUnit, yAxisUnitPosition = 'left
             return {...BASE_DOMAIN_PADDING, left: geometricPadding, right: geometricPadding};
         }
 
-        const firstLabelWidth = measureTextWidth(data.at(0)?.label ?? '', font);
-        const lastLabelWidth = measureTextWidth(data.at(-1)?.label ?? '', font);
+        const firstLabelWidth = measureTextWidth(data.at(0)?.label ?? '', font, paragraphLabelRenderer);
+        const lastLabelWidth = measureTextWidth(data.at(-1)?.label ?? '', font, paragraphLabelRenderer);
 
         const firstLabelNeeds = firstLabelWidth / 2;
         const lastLabelNeeds = lastLabelWidth / 2;
@@ -140,6 +141,7 @@ function LineChartContent({data, isLoading, yAxisUnit, yAxisUnitPosition = 'left
     const {labelRotation, labelSkipInterval, truncatedLabels, xAxisLabelHeight} = useChartLabelLayout({
         data,
         font,
+        labelRenderer: paragraphLabelRenderer,
         tickSpacing,
         labelAreaWidth: plotAreaWidth,
         firstTickLeftSpace: boundsLeft + domainPadding.left * paddingScale,
@@ -156,6 +158,7 @@ function LineChartContent({data, isLoading, yAxisUnit, yAxisUnitPosition = 'left
 
     const {isCursorOverLabel, findLabelCursorX, updateTickPositions} = useLabelHitTesting({
         font,
+        labelRenderer: paragraphLabelRenderer,
         truncatedLabels,
         labelRotation,
         labelSkipInterval,
@@ -216,6 +219,7 @@ function LineChartContent({data, isLoading, yAxisUnit, yAxisUnitPosition = 'left
                         labelRotation={labelRotation}
                         labelSkipInterval={labelSkipInterval}
                         font={font}
+                        labelRenderer={paragraphLabelRenderer}
                         labelColor={theme.textSupporting}
                         xScale={args.xScale}
                         chartBoundsBottom={args.chartBounds.bottom}
@@ -267,6 +271,7 @@ function LineChartContent({data, isLoading, yAxisUnit, yAxisUnitPosition = 'left
                         yAxis={[
                             {
                                 font,
+                                labelRenderer: paragraphLabelRenderer,
                                 labelColor: theme.textSupporting,
                                 formatYLabel: formatValue,
                                 tickCount: Y_AXIS_TICK_COUNT,

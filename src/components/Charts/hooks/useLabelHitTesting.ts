@@ -2,7 +2,7 @@ import type {SkFont} from '@shopify/react-native-skia';
 import {useMemo} from 'react';
 import type {SharedValue} from 'react-native-reanimated';
 import {useSharedValue} from 'react-native-reanimated';
-import type {Scale} from 'victory-native';
+import type {AxisLabelRenderer, Scale} from 'victory-native';
 import {DIAGONAL_ANGLE_RADIAN_THRESHOLD} from '@components/Charts/constants';
 import type {LabelRotation} from '@components/Charts/types';
 import {isCursorOverChartLabel, measureTextWidth} from '@components/Charts/utils';
@@ -59,6 +59,7 @@ type ComputeGeometryFn = (input: ComputeGeometryInput) => LabelHitGeometry;
 
 type UseLabelHitTestingParams = {
     font: SkFont | null | undefined;
+    labelRenderer?: AxisLabelRenderer;
     truncatedLabels: string[];
     labelRotation: LabelRotation;
     labelSkipInterval: number;
@@ -83,15 +84,15 @@ type UseLabelHitTestingParams = {
  * Chart-specific geometry (45° corner anchor offsets, 90° vertical bounds) is supplied
  * via the `computeGeometry` callback, which should be a stable module-level constant.
  */
-function useLabelHitTesting({font, truncatedLabels, labelRotation, labelSkipInterval, chartBottom, computeGeometry}: UseLabelHitTestingParams) {
+function useLabelHitTesting({font, labelRenderer, truncatedLabels, labelRotation, labelSkipInterval, chartBottom, computeGeometry}: UseLabelHitTestingParams) {
     const tickXPositions = useSharedValue<number[]>([]);
 
     const labelWidths = useMemo(() => {
         if (!font) {
             return [] as number[];
         }
-        return truncatedLabels.map((label) => measureTextWidth(label, font));
-    }, [font, truncatedLabels]);
+        return truncatedLabels.map((label) => measureTextWidth(label, font, labelRenderer));
+    }, [font, truncatedLabels, labelRenderer]);
 
     const angleRad = (Math.abs(labelRotation) * Math.PI) / 180;
 
