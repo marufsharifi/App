@@ -16,7 +16,7 @@ import usePolicy from '@hooks/usePolicy';
 import useThemeStyles from '@hooks/useThemeStyles';
 import getNonEmptyStringOnyxID from '@libs/getNonEmptyStringOnyxID';
 import {isMessageDeleted, isReversedTransaction as isReversedTransactionReportActionsUtils, isTransactionThread} from '@libs/ReportActionsUtils';
-import {isCanceledTaskReport, isExpenseReport, isInvoiceReport, isIOUReport, isTaskReport} from '@libs/ReportUtils';
+import {getResolvedReportCurrency, isCanceledTaskReport, isExpenseReport, isInvoiceReport, isIOUReport, isTaskReport} from '@libs/ReportUtils';
 import {getCurrency} from '@libs/TransactionUtils';
 import CONST from '@src/CONST';
 import type {TranslationPaths} from '@src/languages/types';
@@ -64,8 +64,10 @@ function ReportActionItemContentCreated({
     const {report, action, transactionThreadReport} = contextMenuStateValue;
     const policy = usePolicy(report?.policyID === CONST.POLICY.OWNER_EMAIL_FAKE ? undefined : report?.policyID);
     const [transaction] = useOnyx(`${ONYXKEYS.COLLECTION.TRANSACTION}${getNonEmptyStringOnyxID(transactionID)}`);
+    const [reportMetadata] = useOnyx(`${ONYXKEYS.COLLECTION.REPORT_METADATA}${getNonEmptyStringOnyxID(report?.reportID)}`);
 
     const transactionCurrency = getCurrency(transaction);
+    const resolvedReportCurrency = getResolvedReportCurrency({report, reportMetadata, transaction});
 
     const renderThreadDivider = useMemo(
         () =>
@@ -178,7 +180,7 @@ function ReportActionItemContentCreated({
                             policy={policy}
                             isCombinedReport
                             pendingAction={action?.pendingAction}
-                            shouldShowTotal={transaction ? transactionCurrency !== report?.currency : false}
+                            shouldShowTotal={transaction ? !!resolvedReportCurrency && transactionCurrency !== resolvedReportCurrency : false}
                             shouldHideThreadDividerLine={false}
                             shouldShowAnimatedBackground={false}
                         />
