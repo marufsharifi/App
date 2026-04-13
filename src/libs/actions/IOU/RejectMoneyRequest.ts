@@ -140,6 +140,7 @@ function prepareRejectMoneyRequestData(
     let createdIOUReportActionID;
     let expenseMovedReportActionID;
     let expenseCreatedReportActionID;
+    let resolvedDestinationCurrency: string | undefined;
 
     const hasMultipleExpenses = getReportTransactions(reportID).length > 1;
     const transactionCommentCleanup = (() => {
@@ -358,6 +359,7 @@ function prepareRejectMoneyRequestData(
         if (existingOpenReport) {
             movedToReport = existingOpenReport;
             rejectedToReportID = existingOpenReport.reportID;
+            resolvedDestinationCurrency = movedToReport.currency;
 
             const [, , iouAction] = buildOptimisticMoneyRequestEntities({
                 iouReport: movedToReport,
@@ -389,6 +391,13 @@ function prepareRejectMoneyRequestData(
                 },
                 {
                     onyxMethod: Onyx.METHOD.MERGE,
+                    key: `${ONYXKEYS.COLLECTION.REPORT_METADATA}${rejectedToReportID}`,
+                    value: {
+                        resolvedCurrency: resolvedDestinationCurrency,
+                    },
+                },
+                {
+                    onyxMethod: Onyx.METHOD.MERGE,
                     key: `${ONYXKEYS.COLLECTION.REPORT}${childReportID}`,
                     value: {
                         parentReportActionID: iouAction.reportActionID,
@@ -409,6 +418,13 @@ function prepareRejectMoneyRequestData(
                     key: `${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${rejectedToReportID}`,
                     value: {[iouAction.reportActionID]: {pendingAction: null}},
                 },
+                {
+                    onyxMethod: Onyx.METHOD.MERGE,
+                    key: `${ONYXKEYS.COLLECTION.REPORT_METADATA}${rejectedToReportID}`,
+                    value: {
+                        resolvedCurrency: resolvedDestinationCurrency,
+                    },
+                },
             );
 
             failureData.push(
@@ -419,6 +435,13 @@ function prepareRejectMoneyRequestData(
                     value: {
                         total: movedToReport?.total ?? 0,
                         pendingFields: {total: null},
+                    },
+                },
+                {
+                    onyxMethod: Onyx.METHOD.MERGE,
+                    key: `${ONYXKEYS.COLLECTION.REPORT_METADATA}${rejectedToReportID}`,
+                    value: {
+                        resolvedCurrency: null,
                     },
                 },
                 {
@@ -450,6 +473,7 @@ function prepareRejectMoneyRequestData(
                 reportTransactions,
                 betas,
             });
+            resolvedDestinationCurrency = newExpenseReport.currency;
             const [, createdActionForExpenseReport, iouAction] = buildOptimisticMoneyRequestEntities({
                 iouReport: newExpenseReport,
                 type: CONST.IOU.REPORT_ACTION_TYPE.CREATE,
@@ -490,6 +514,7 @@ function prepareRejectMoneyRequestData(
                     key: `${ONYXKEYS.COLLECTION.REPORT_METADATA}${rejectedToReportID}`,
                     value: {
                         isOptimisticReport: true,
+                        resolvedCurrency: resolvedDestinationCurrency,
                         hasOnceLoadedReportActions: true,
                     },
                 },
@@ -535,6 +560,7 @@ function prepareRejectMoneyRequestData(
                     key: `${ONYXKEYS.COLLECTION.REPORT_METADATA}${rejectedToReportID}`,
                     value: {
                         isOptimisticReport: null,
+                        resolvedCurrency: resolvedDestinationCurrency,
                     },
                 },
                 {

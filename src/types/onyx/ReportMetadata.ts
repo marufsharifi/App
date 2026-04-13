@@ -43,6 +43,9 @@ type ReportMetadata = {
     /** Whether the current report is optimistic */
     isOptimisticReport?: boolean;
 
+    /** Currency resolved for the report before the full report payload is available */
+    resolvedCurrency?: string;
+
     /** Pending members of the report */
     pendingChatMembers?: PendingChatMember[];
 

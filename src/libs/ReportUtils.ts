@@ -6899,6 +6899,16 @@ function buildOptimisticExpenseReport({
     return expenseReport;
 }
 
+function getResolvedReportCurrency({
+    report,
+    reportMetadata,
+}: {
+    report: OnyxInputOrEntry<Report> | undefined;
+    reportMetadata?: OnyxEntry<ReportMetadata>;
+}): string | undefined {
+    return report?.currency ?? reportMetadata?.resolvedCurrency;
+}
+
 function buildOptimisticEmptyReport(
     reportID: string,
     accountID: number,
@@ -13832,6 +13842,7 @@ export {
     getTransactionSortValue,
     isSortableColumnName,
     getLinkedIOUTransaction,
+    getResolvedReportCurrency,
 };
 
 export type {
