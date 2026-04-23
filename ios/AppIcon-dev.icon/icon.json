@@ -10,6 +10,7 @@
       "value" : "automatic"
     }
   ],
+  // test
   "groups" : [
     {
       "blend-mode-specializations" : [
