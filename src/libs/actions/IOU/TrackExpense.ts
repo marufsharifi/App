@@ -531,7 +531,15 @@ function buildOnyxDataForTrackExpense({
                     ...(shouldCreateNewMoneyRequestReport
                         ? {
                               [iouCreatedAction.reportActionID]: {
-                                  errors: getReceiptError(transaction.receipt, transaction.receipt?.filename, isScanRequest, undefined, CONST.IOU.ACTION_PARAMS.TRACK_EXPENSE, retryParams),
+                                  errors: getReceiptError(
+                                      transaction.receipt,
+                                      transaction.receipt?.filename,
+                                      isScanRequest,
+                                      undefined,
+                                      CONST.IOU.ACTION_PARAMS.TRACK_EXPENSE,
+                                      retryParams,
+                                      transaction.transactionID,
+                                  ),
                               },
                               [iouAction.reportActionID]: {
                                   errors: getMicroSecondOnyxErrorWithTranslationKey('iou.error.genericCreateFailureMessage'),
@@ -539,7 +547,15 @@ function buildOnyxDataForTrackExpense({
                           }
                         : {
                               [iouAction.reportActionID]: {
-                                  errors: getReceiptError(transaction.receipt, transaction.receipt?.filename, isScanRequest, undefined, CONST.IOU.ACTION_PARAMS.TRACK_EXPENSE, retryParams),
+                                  errors: getReceiptError(
+                                      transaction.receipt,
+                                      transaction.receipt?.filename,
+                                      isScanRequest,
+                                      undefined,
+                                      CONST.IOU.ACTION_PARAMS.TRACK_EXPENSE,
+                                      retryParams,
+                                      transaction.transactionID,
+                                  ),
                               },
                           }),
                 },
@@ -551,7 +567,15 @@ function buildOnyxDataForTrackExpense({
             key: `${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${chatReport?.reportID}`,
             value: {
                 [iouAction.reportActionID]: {
-                    errors: getReceiptError(transaction.receipt, transaction.receipt?.filename, isScanRequest, undefined, CONST.IOU.ACTION_PARAMS.TRACK_EXPENSE, retryParams),
+                    errors: getReceiptError(
+                        transaction.receipt,
+                        transaction.receipt?.filename,
+                        isScanRequest,
+                        undefined,
+                        CONST.IOU.ACTION_PARAMS.TRACK_EXPENSE,
+                        retryParams,
+                        transaction.transactionID,
+                    ),
                 },
             },
         });
@@ -583,7 +607,15 @@ function buildOnyxDataForTrackExpense({
             onyxMethod: Onyx.METHOD.MERGE,
             key: `${ONYXKEYS.COLLECTION.TRANSACTION}${transaction.transactionID}`,
             value: {
-                errors: getReceiptError(transaction.receipt, transaction.receipt?.filename, isScanRequest, undefined, CONST.IOU.ACTION_PARAMS.TRACK_EXPENSE, retryParams),
+                errors: getReceiptError(
+                    transaction.receipt,
+                    transaction.receipt?.filename,
+                    isScanRequest,
+                    undefined,
+                    CONST.IOU.ACTION_PARAMS.TRACK_EXPENSE,
+                    retryParams,
+                    transaction.transactionID,
+                ),
                 pendingFields: clearedPendingFields,
             },
         },
@@ -1081,6 +1113,10 @@ function getTrackExpenseInformation(params: GetTrackExpenseInformationParams): T
     // to remind me to do this.
     if (isDistanceRequest) {
         optimisticTransaction = fastMerge(existingTransactionData, optimisticTransaction, false);
+    }
+
+    if (retryParams) {
+        (retryParams as CreateTrackExpenseParams).existingTransaction = optimisticTransaction;
     }
 
     // STEP 4: Build optimistic reportActions. We need:

@@ -1152,6 +1152,7 @@ function getReceiptError(
     errorKey?: number,
     action?: IOUActionParams,
     retryParams?: StartSplitBilActionParams | CreateTrackExpenseParams | RequestMoneyInformation | ReplaceReceipt,
+    transactionID?: string,
 ): Errors | ErrorFields {
     const formattedRetryParams = typeof retryParams === 'string' ? retryParams : JSON.stringify(retryParams);
 
@@ -1164,6 +1165,7 @@ function getReceiptError(
                   filename: filename ?? '',
                   action: action ?? '',
                   retryParams: formattedRetryParams,
+                  transactionID: transactionID ?? null,
               },
               errorKey,
           );
@@ -1775,7 +1777,15 @@ function buildOnyxDataForMoneyRequest(moneyRequestParams: BuildOnyxDataForMoneyR
             onyxMethod: Onyx.METHOD.MERGE,
             key: `${ONYXKEYS.COLLECTION.TRANSACTION}${transaction.transactionID}`,
             value: {
-                errors: getReceiptError(transaction.receipt, transaction.receipt?.filename, isScanRequest, errorKey, CONST.IOU.ACTION_PARAMS.MONEY_REQUEST, retryParams),
+                errors: getReceiptError(
+                    transaction.receipt,
+                    transaction.receipt?.filename,
+                    isScanRequest,
+                    errorKey,
+                    CONST.IOU.ACTION_PARAMS.MONEY_REQUEST,
+                    retryParams,
+                    transaction.transactionID,
+                ),
                 pendingFields: clearedPendingFields,
             },
         },
@@ -1786,7 +1796,15 @@ function buildOnyxDataForMoneyRequest(moneyRequestParams: BuildOnyxDataForMoneyR
                 ...(shouldCreateNewMoneyRequestReport
                     ? {
                           [iou.createdAction.reportActionID]: {
-                              errors: getReceiptError(transaction.receipt, transaction.receipt?.filename, isScanRequest, errorKey, CONST.IOU.ACTION_PARAMS.MONEY_REQUEST, retryParams),
+                              errors: getReceiptError(
+                                  transaction.receipt,
+                                  transaction.receipt?.filename,
+                                  isScanRequest,
+                                  errorKey,
+                                  CONST.IOU.ACTION_PARAMS.MONEY_REQUEST,
+                                  retryParams,
+                                  transaction.transactionID,
+                              ),
                           },
                           [iou.action.reportActionID]: {
                               errors: getMicroSecondOnyxErrorWithTranslationKey('iou.error.genericCreateFailureMessage'),
@@ -1794,7 +1812,15 @@ function buildOnyxDataForMoneyRequest(moneyRequestParams: BuildOnyxDataForMoneyR
                       }
                     : {
                           [iou.action.reportActionID]: {
-                              errors: getReceiptError(transaction.receipt, transaction.receipt?.filename, isScanRequest, errorKey, CONST.IOU.ACTION_PARAMS.MONEY_REQUEST, retryParams),
+                              errors: getReceiptError(
+                                  transaction.receipt,
+                                  transaction.receipt?.filename,
+                                  isScanRequest,
+                                  errorKey,
+                                  CONST.IOU.ACTION_PARAMS.MONEY_REQUEST,
+                                  retryParams,
+                                  transaction.transactionID,
+                              ),
                           },
                       }),
             },
@@ -2253,6 +2279,10 @@ function getMoneyRequestInformation(moneyRequestInformation: MoneyRequestInforma
         if (originalConvertedAmount && originalAmount && splitAmount) {
             optimisticTransaction.convertedAmount = Math.round((originalConvertedAmount * splitAmount) / originalAmount);
         }
+    }
+
+    if (retryParams) {
+        (retryParams as RequestMoneyInformation).existingTransactionDraft = optimisticTransaction;
     }
 
     // STEP 4: Build optimistic reportActions. We need:
