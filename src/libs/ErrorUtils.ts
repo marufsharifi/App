@@ -10,7 +10,7 @@ import {isEmptyValueObject} from '@src/types/utils/EmptyObject';
 import DateUtils from './DateUtils';
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 import {translate, translateLocal} from './Localize';
-
+//oeworowier
 function getAuthenticateErrorMessage<TKey extends OnyxKey>(response: Response<TKey>): TranslationPaths {
     switch (response.jsonCode) {
         case CONST.JSON_CODE.UNABLE_TO_RETRY:
