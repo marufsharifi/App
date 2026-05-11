@@ -5,6 +5,7 @@
         "solid" : "srgb:0.01176,0.83137,0.48627,1.00000"
       }
     },
+    // all icons are wronge
     {
       "appearance" : "dark",
       "value" : "automatic"
