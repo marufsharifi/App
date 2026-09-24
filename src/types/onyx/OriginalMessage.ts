@@ -271,6 +271,9 @@ type OriginalMessageSubmitted = {
     /** The memo of the submitted report */
     message?: string;
 
+    /** The account ID of the approver this report was submitted to */
+    submittedTo?: number;
+
     /** The login the approver who is acting on behalf of the vacationer */
     to?: string;
 

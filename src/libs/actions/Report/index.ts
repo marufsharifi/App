@@ -5204,8 +5204,18 @@ function shouldShowReportActionNotification(
         return false;
     }
 
-    // We don't want to send a local notification if the user preference is daily, mute or hidden.
-    const notificationPreference = getReportNotificationPreference(allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${reportID}`]);
+    const report = allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${reportID}`];
+    const reportNotificationPreference = getReportNotificationPreference(report, currentUserAccountID);
+    const parentReport =
+        reportNotificationPreference === CONST.REPORT.NOTIFICATION_PREFERENCE.HIDDEN &&
+        isExpenseReport(report) &&
+        ReportActionsUtils.isSubmittedAction(action) &&
+        ReportActionsUtils.getOriginalMessage(action)?.submittedTo === currentUserAccountID &&
+        report?.chatReportID
+            ? allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${report.chatReportID}`]
+            : undefined;
+    // Submitted expenses use the workspace chat's preference when the expense report itself is hidden.
+    const notificationPreference = parentReport ? getReportNotificationPreference(parentReport, currentUserAccountID) : reportNotificationPreference;
     if (notificationPreference !== CONST.REPORT.NOTIFICATION_PREFERENCE.ALWAYS) {
         Log.info(`${tag} No notification because user preference is to be notified: ${notificationPreference}`);
         return false;
@@ -5229,7 +5239,6 @@ function shouldShowReportActionNotification(
         return false;
     }
 
-    const report = allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${reportID}`];
     if (!report || report?.pendingAction === CONST.RED_BRICK_ROAD_PENDING_ACTION.DELETE) {
         Log.info(`${tag} No notification because the report does not exist or is pending deleted`, false);
         return false;

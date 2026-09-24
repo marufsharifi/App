@@ -169,4 +169,79 @@ describe('showReportActionNotification', () => {
         expect(mockShowCommentNotification).toHaveBeenCalledTimes(1);
         expect(mockShowModifiedExpenseNotification).not.toHaveBeenCalled();
     });
+
+    it.each([
+        {
+            name: 'submitted expense to the approver',
+            actionName: CONST.REPORT.ACTIONS.TYPE.SUBMITTED,
+            submittedTo: CURRENT_USER_ACCOUNT_ID,
+            parentPreference: CONST.REPORT.NOTIFICATION_PREFERENCE.ALWAYS,
+            expected: 1,
+        },
+        {
+            name: 'muted parent chat',
+            actionName: CONST.REPORT.ACTIONS.TYPE.SUBMITTED,
+            submittedTo: CURRENT_USER_ACCOUNT_ID,
+            parentPreference: CONST.REPORT.NOTIFICATION_PREFERENCE.MUTE,
+            expected: 0,
+        },
+        {
+            name: 'daily parent chat',
+            actionName: CONST.REPORT.ACTIONS.TYPE.SUBMITTED,
+            submittedTo: CURRENT_USER_ACCOUNT_ID,
+            parentPreference: CONST.REPORT.NOTIFICATION_PREFERENCE.DAILY,
+            expected: 0,
+        },
+        {
+            name: 'ordinary comment on the hidden expense',
+            actionName: CONST.REPORT.ACTIONS.TYPE.ADD_COMMENT,
+            submittedTo: CURRENT_USER_ACCOUNT_ID,
+            parentPreference: CONST.REPORT.NOTIFICATION_PREFERENCE.ALWAYS,
+            expected: 0,
+        },
+        {
+            name: 'expense submitted to another approver',
+            actionName: CONST.REPORT.ACTIONS.TYPE.SUBMITTED,
+            submittedTo: OTHER_USER_ACCOUNT_ID,
+            parentPreference: CONST.REPORT.NOTIFICATION_PREFERENCE.ALWAYS,
+            expected: 0,
+        },
+    ])('only inherits the parent chat preference for a $name', async ({actionName, submittedTo, parentPreference, expected}) => {
+        // Given a hidden expense report and a parent workspace chat with the selected preference.
+        await setupReport();
+        await Onyx.merge(`${ONYXKEYS.COLLECTION.REPORT}${REPORT_ID}`, {
+            type: CONST.REPORT.TYPE.EXPENSE,
+            managerID: OTHER_USER_ACCOUNT_ID,
+            chatReportID: 'parent-report-id',
+            participants: {[CURRENT_USER_ACCOUNT_ID]: {notificationPreference: CONST.REPORT.NOTIFICATION_PREFERENCE.HIDDEN}},
+        });
+        await Onyx.merge(`${ONYXKEYS.COLLECTION.REPORT}parent-report-id`, {
+            reportID: 'parent-report-id',
+            participants: {[CURRENT_USER_ACCOUNT_ID]: {notificationPreference: parentPreference}},
+        });
+        await waitForBatchedUpdates();
+
+        // When another user creates the report action.
+        Report.showReportActionNotification(
+            REPORT_ID,
+            {
+                reportActionID: 'report-action',
+                actionName,
+                originalMessage: {submittedTo},
+                actorAccountID: OTHER_USER_ACCOUNT_ID,
+                created: '2026-01-01 00:00:00.000',
+                message: [{type: 'COMMENT', html: 'report action', text: 'report action'}],
+            } as Parameters<typeof Report.showReportActionNotification>[1],
+            undefined,
+            CURRENT_USER_ACCOUNT_ID,
+            CURRENT_USER_LOGIN,
+            formatPhoneNumber,
+            DERIVED_REPORT_NAME,
+            undefined,
+        );
+        await waitForBatchedUpdates();
+
+        // Then only the submitted expense addressed to this approver notifies.
+        expect(mockShowCommentNotification).toHaveBeenCalledTimes(expected);
+    });
 });

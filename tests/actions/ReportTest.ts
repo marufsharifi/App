@@ -1087,6 +1087,41 @@ describe('actions/Report', () => {
             });
     });
 
+    it('only forwards an unflagged submitted action to its approver', async () => {
+        const accountID = 1;
+        const login = 'test@user.com';
+        const reportID = 'submitted-report-id';
+        const submittedAction = {
+            actionName: CONST.REPORT.ACTIONS.TYPE.SUBMITTED,
+            originalMessage: {submittedTo: accountID, amount: 4300, currency: CONST.CURRENCY.USD},
+        };
+
+        // Given an approver listening for report action updates.
+        await TestHelper.signInWithTestUser(accountID, login);
+        await waitForBatchedUpdates();
+        User.subscribeToUserEvents(accountID, login, () => {}, formatPhoneNumber, undefined);
+        await waitForBatchedUpdates();
+
+        // When an unflagged update contains actions for this approver and other users.
+        PusherHelper.emitOnyxUpdate([
+            {
+                onyxMethod: Onyx.METHOD.MERGE,
+                key: `${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${reportID}`,
+                value: {
+                    1: submittedAction,
+                    2: {actionName: CONST.REPORT.ACTIONS.TYPE.ADD_COMMENT},
+                    3: {actionName: CONST.REPORT.ACTIONS.TYPE.SUBMITTED, originalMessage: {submittedTo: 2, amount: 4300, currency: CONST.CURRENCY.USD}},
+                },
+            },
+        ]);
+        await SequentialQueue.getCurrentRequest();
+        await waitForBatchedUpdates();
+
+        // Then only the action addressed to this approver reaches the notification gate.
+        expect(Report.showReportActionNotification).toHaveBeenCalledTimes(1);
+        expect(Report.showReportActionNotification).toHaveBeenCalledWith(reportID, submittedAction, undefined, accountID, login, formatPhoneNumber, undefined, undefined);
+    });
+
     it('should properly toggle reactions on a message', () => {
         global.fetch = TestHelper.createGlobalFetchMock();
 

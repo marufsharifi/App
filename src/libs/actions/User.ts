@@ -700,7 +700,8 @@ function triggerNotifications<TKey extends OnyxKey>(
     reportAttributes?: ReportAttributesDerivedValue['reports'],
 ) {
     for (const update of onyxUpdates) {
-        if (!update.shouldNotify && !update.shouldShowPushNotification) {
+        const shouldNotify = update.shouldNotify || update.shouldShowPushNotification;
+        if (!shouldNotify && !update.key.startsWith(ONYXKEYS.COLLECTION.REPORT_ACTIONS)) {
             continue;
         }
 
@@ -708,7 +709,7 @@ function triggerNotifications<TKey extends OnyxKey>(
         const reportActions = Object.values((update.value as OnyxCollection<ReportAction>) ?? {});
 
         for (const action of reportActions) {
-            if (action) {
+            if (action && (shouldNotify || (ReportActionsUtils.isSubmittedAction(action) && ReportActionsUtils.getOriginalMessage(action)?.submittedTo === currentUserAccountID))) {
                 // They aren't connected to a UI anywhere, it's OK to use currentUserEmail
                 const derivedMovedFromReportName = reportAttributes?.[getMovedReportID(action, CONST.REPORT.MOVE_TYPE.FROM) ?? '']?.reportName;
                 showReportActionNotification(
