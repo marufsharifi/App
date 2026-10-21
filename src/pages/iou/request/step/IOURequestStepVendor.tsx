@@ -4,6 +4,7 @@ import SingleSelectListItem from '@components/SelectionList/ListItem/SingleSelec
 import type {ListItem} from '@components/SelectionList/types';
 
 import useDelegateAccountID from '@hooks/useDelegateAccountID';
+import useInitialValue from '@hooks/useInitialValue';
 import {useMemoizedLazyIllustrations} from '@hooks/useLazyAsset';
 import useLocalize from '@hooks/useLocalize';
 import useOnyx from '@hooks/useOnyx';
@@ -16,6 +17,7 @@ import {updateMoneyRequestVendor} from '@libs/actions/IOU/UpdateMoneyRequest';
 import getNonEmptyStringOnyxID from '@libs/getNonEmptyStringOnyxID';
 import Navigation from '@libs/Navigation/Navigation';
 import {getMatchingVendors, getVendorEmptyState, hasVendorFeature, isXeroActiveMatchingSource, sortVendors} from '@libs/PolicyUtils';
+import moveInitialSelectionToTop from '@libs/SelectionListOrderUtils';
 import {isPerDiemRequest} from '@libs/TransactionUtils';
 
 import variables from '@styles/variables';
@@ -76,31 +78,35 @@ function IOURequestStepVendor({
     const currentVendorID = transaction?.comment?.vendor?.externalID;
     const vendorLabel = isOnXero ? translate('common.supplier') : translate('common.vendor');
 
-    const trimmedSearch = searchValue.trim().toLowerCase();
-    const vendorRows: VendorListItem[] = sortedVendors
-        .filter((vendor) => !trimmedSearch || vendor.name.toLowerCase().includes(trimmedSearch))
-        .map((vendor) => ({
-            value: vendor.id,
-            text: vendor.name,
-            keyForList: vendor.id,
-            isSelected: vendor.id === currentVendorID,
-            searchText: vendor.name,
-        }));
+    // Freeze the vendor selected when the page opened so the optimistic update on select (or an external change) doesn't reorder the list while it stays open.
+    const initialVendorID = useInitialValue(() => currentVendorID);
 
-    // When a vendor is currently set, offer a "None" row so the user can clear a stale (e.g. removed from the accounting integration) vendor without picking a replacement, which resolves an inactiveVendor violation. Hidden during search to keep results clean.
-    const shouldShowNoneRow = !!currentVendorID && !trimmedSearch;
-    const data: VendorListItem[] = shouldShowNoneRow
-        ? [
-              {
-                  value: '',
-                  text: translate('common.none'),
-                  keyForList: 'clear-vendor',
-                  isSelected: false,
-                  searchText: '',
-              },
-              ...vendorRows,
-          ]
-        : vendorRows;
+    const vendorOptions: VendorListItem[] = sortedVendors.map((vendor) => ({
+        value: vendor.id,
+        text: vendor.name,
+        keyForList: vendor.id,
+        isSelected: vendor.id === currentVendorID,
+        searchText: vendor.name,
+    }));
+
+    // When a vendor is currently set, offer a "None" row so the user can clear a stale (e.g. removed from the accounting integration) vendor without picking a replacement, which resolves an inactiveVendor violation. Prepend it before pinning so the pinned selection sits above it (matching the other vendor pickers).
+    const noneOption: VendorListItem = {
+        value: '',
+        text: translate('common.none'),
+        keyForList: 'clear-vendor',
+        isSelected: false,
+        searchText: '',
+    };
+    const allVendorOptions = currentVendorID ? [noneOption, ...vendorOptions] : vendorOptions;
+
+    // Pin the initially-selected vendor to the top of the full list before filtering, so on a long searchable list the current choice stays visible above the keyboard instead of hiding in its alphabetical position. No-ops for short lists.
+    const orderedVendorOptions = moveInitialSelectionToTop(allVendorOptions, initialVendorID ? [initialVendorID] : []);
+
+    const trimmedSearch = searchValue.trim().toLowerCase();
+    // Hide the "None" row during search to keep results clean.
+    const data: VendorListItem[] = trimmedSearch
+        ? orderedVendorOptions.filter((option) => option.value !== '' && (option.text ?? '').toLowerCase().includes(trimmedSearch))
+        : orderedVendorOptions;
 
     const shouldShowNotFoundPage = useShowNotFoundPageInIOUStep(action, iouType, reportActionID, report, transaction) || !isFeatureAvailable || isReimbursable || isInvoice;
 
@@ -167,7 +173,8 @@ function IOURequestStepVendor({
                             onChangeText: setSearchValue,
                             headerMessage,
                         }}
-                        initiallyFocusedItemKey={shouldShowNoneRow ? undefined : data.find((item) => item.isSelected)?.keyForList}
+                        initiallyFocusedItemKey={data.find((item) => item.isSelected)?.keyForList}
+                        shouldScrollToFocusedIndexOnMount={false}
                         ListItem={SingleSelectListItem}
                         listEmptyContent={listEmptyContent}
                         shouldSingleExecuteRowSelect
