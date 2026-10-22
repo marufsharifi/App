@@ -1,3 +1,4 @@
+import ActivityIndicator from '@components/ActivityIndicator';
 import BlockingView from '@components/BlockingViews/BlockingView';
 import SelectionList from '@components/SelectionList';
 import SingleSelectListItem from '@components/SelectionList/ListItem/SingleSelectListItem';
@@ -7,6 +8,7 @@ import useDelegateAccountID from '@hooks/useDelegateAccountID';
 import useInitialValue from '@hooks/useInitialValue';
 import {useMemoizedLazyIllustrations} from '@hooks/useLazyAsset';
 import useLocalize from '@hooks/useLocalize';
+import useNetwork from '@hooks/useNetwork';
 import useOnyx from '@hooks/useOnyx';
 import usePermissions from '@hooks/usePermissions';
 import usePolicyForTransaction from '@hooks/usePolicyForTransaction';
@@ -14,9 +16,10 @@ import useShowNotFoundPageInIOUStep from '@hooks/useShowNotFoundPageInIOUStep';
 import useThemeStyles from '@hooks/useThemeStyles';
 
 import {updateMoneyRequestVendor} from '@libs/actions/IOU/UpdateMoneyRequest';
+import {openPolicyVendorsPage} from '@libs/actions/Policy/Vendor';
 import getNonEmptyStringOnyxID from '@libs/getNonEmptyStringOnyxID';
 import Navigation from '@libs/Navigation/Navigation';
-import {getMatchingVendors, getVendorEmptyState, hasVendorFeature, isXeroActiveMatchingSource, sortVendors} from '@libs/PolicyUtils';
+import {getVendorEmptyState, hasVendorFeature, sortVendors} from '@libs/PolicyUtils';
 import moveInitialSelectionToTop from '@libs/SelectionListOrderUtils';
 import {isPerDiemRequest} from '@libs/TransactionUtils';
 
@@ -26,7 +29,7 @@ import CONST from '@src/CONST';
 import ONYXKEYS from '@src/ONYXKEYS';
 import type SCREENS from '@src/SCREENS';
 
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 
 import type {WithFullTransactionOrNotFoundProps} from './withFullTransactionOrNotFound';
 import type {WithWritableReportOrNotFoundProps} from './withWritableReportOrNotFound';
@@ -63,50 +66,87 @@ function IOURequestStepVendor({
     });
     const [parentReport] = useOnyx(`${ONYXKEYS.COLLECTION.REPORT}${getNonEmptyStringOnyxID(report?.parentReportID)}`);
     const [transactionViolations] = useOnyx(`${ONYXKEYS.COLLECTION.TRANSACTION_VIOLATIONS}${getNonEmptyStringOnyxID(transactionID)}`);
+    const [policyVendors] = useOnyx(`${ONYXKEYS.COLLECTION.POLICY_VENDORS}${policy?.id}`);
     const delegateAccountID = useDelegateAccountID();
 
     const isVendorMatchingBetaEnabled = isBetaEnabled(CONST.BETAS.VENDOR_MATCHING);
     const isFeatureAvailable = hasVendorFeature(policy, isVendorMatchingBetaEnabled);
-    const isOnXero = isXeroActiveMatchingSource(policy);
+    // Stale sessions may never have received the policyVendors_ collection, so fetch it if missing.
+    const fetchVendorsIfMissing = () => {
+        if (!isFeatureAvailable || !policy?.id || policyVendors !== undefined) {
+            return;
+        }
+        openPolicyVendorsPage(policy.id);
+    };
+
+    const {isOffline} = useNetwork({onReconnect: fetchVendorsIfMissing});
+
+    useEffect(() => {
+        fetchVendorsIfMissing();
+        // Re-run when the policy loads or the collection is cleared, so a missing fetch retries.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isFeatureAvailable, policy?.id, policyVendors]);
     const emptyState = getVendorEmptyState(policy, translate);
 
     // Vendor is scoped to non-reimbursable expenses on a policy expense chat; block deep-link / stale-open access if the transaction is reimbursable or is an invoice (invoices are non-reimbursable but don't route through the vendor-matching flow).
     const isReimbursable = !!transaction?.reimbursable;
     const isInvoice = iouType === CONST.IOU.TYPE.INVOICE;
-    const vendors = getMatchingVendors(policy);
-    const sortedVendors = sortVendors(vendors, localeCompare);
+
     const currentVendorID = transaction?.comment?.vendor?.externalID;
-    const vendorLabel = isOnXero ? translate('common.supplier') : translate('common.vendor');
+    const currentVendor = currentVendorID ? policyVendors?.[currentVendorID] : undefined;
+    const isCurrentVendorDisabled = !!currentVendorID && policyVendors !== undefined && !currentVendor?.enabled;
+
+    const isLoading = !isOffline && policyVendors === undefined;
+
+    const enabledVendors = Object.values(policyVendors ?? {}).filter((vendor) => vendor.enabled);
+    const sortedEnabledVendors = sortVendors(enabledVendors, localeCompare);
 
     // Freeze the vendor selected when the page opened so the optimistic update on select (or an external change) doesn't reorder the list while it stays open.
     const initialVendorID = useInitialValue(() => currentVendorID);
 
-    const vendorOptions: VendorListItem[] = sortedVendors.map((vendor) => ({
-        value: vendor.id,
-        text: vendor.name,
-        keyForList: vendor.id,
-        isSelected: vendor.id === currentVendorID,
-        searchText: vendor.name,
-    }));
-
-    // When a vendor is currently set, offer a "None" row so the user can clear a stale (e.g. removed from the accounting integration) vendor without picking a replacement, which resolves an inactiveVendor violation. Prepend it before pinning so the pinned selection sits above it (matching the other vendor pickers).
-    const noneOption: VendorListItem = {
-        value: '',
-        text: translate('common.none'),
-        keyForList: 'clear-vendor',
-        isSelected: false,
-        searchText: '',
-    };
-    const allVendorOptions = currentVendorID ? [noneOption, ...vendorOptions] : vendorOptions;
-
-    // Pin the initially-selected vendor to the top of the full list before filtering, so on a long searchable list the current choice stays visible above the keyboard instead of hiding in its alphabetical position. No-ops for short lists.
-    const orderedVendorOptions = moveInitialSelectionToTop(allVendorOptions, initialVendorID ? [initialVendorID] : []);
-
     const trimmedSearch = searchValue.trim().toLowerCase();
-    // Hide the "None" row during search to keep results clean.
-    const data: VendorListItem[] = trimmedSearch
-        ? orderedVendorOptions.filter((option) => option.value !== '' && (option.text ?? '').toLowerCase().includes(trimmedSearch))
-        : orderedVendorOptions;
+    const enabledRows: VendorListItem[] = sortedEnabledVendors
+        .filter((vendor) => !trimmedSearch || vendor.name.toLowerCase().includes(trimmedSearch))
+        .map((vendor) => ({
+            value: vendor.externalID,
+            text: vendor.name,
+            keyForList: vendor.externalID,
+            isSelected: vendor.externalID === currentVendorID,
+            searchText: vendor.name,
+        }));
+
+    const disabledCurrentVendorRow: VendorListItem | undefined =
+        !trimmedSearch && isCurrentVendorDisabled
+            ? {
+                  value: currentVendorID,
+                  text: currentVendor?.name ?? transaction?.comment?.vendor?.name ?? '',
+                  keyForList: currentVendorID,
+                  isSelected: true,
+                  searchText: currentVendor?.name ?? transaction?.comment?.vendor?.name ?? '',
+                  alternateText: translate('common.disabled'),
+              }
+            : undefined;
+
+    const shouldShowNoneRow = !!currentVendorID && !trimmedSearch;
+
+    const unorderedData: VendorListItem[] = [
+        ...(shouldShowNoneRow
+            ? [
+                  {
+                      value: '',
+                      text: translate('common.none'),
+                      keyForList: 'clear-vendor',
+                      isSelected: false,
+                      searchText: '',
+                  },
+              ]
+            : []),
+        ...(disabledCurrentVendorRow ? [disabledCurrentVendorRow] : []),
+        ...enabledRows,
+    ];
+
+    // Pin the vendor selected when the page opened to the top of the list, so on a long searchable list the current choice stays visible above the keyboard instead of hiding in its alphabetical position. The "None"/disabled rows are only present when not searching, so a pinned selection sits above them. No-ops for short lists.
+    const data: VendorListItem[] = moveInitialSelectionToTop(unorderedData, initialVendorID ? [initialVendorID] : []);
 
     const shouldShowNotFoundPage = useShowNotFoundPageInIOUStep(action, iouType, reportActionID, report, transaction) || !isFeatureAvailable || isReimbursable || isInvoice;
 
@@ -136,7 +176,7 @@ function IOURequestStepVendor({
     const headerMessage = searchValue && data.length === 0 ? translate('common.noResultsFound') : '';
 
     const listEmptyContent =
-        vendors.length === 0 ? (
+        enabledVendors.length === 0 && !disabledCurrentVendorRow ? (
             <BlockingView
                 icon={illustrations.Telescope}
                 iconWidth={variables.emptyListIconWidth}
@@ -149,7 +189,7 @@ function IOURequestStepVendor({
 
     return (
         <StepScreenWrapper
-            headerTitle={vendorLabel}
+            headerTitle={translate('common.vendor')}
             onBackButtonPress={navigateBack}
             shouldShowWrapper
             shouldShowNotFoundPage={shouldShowNotFoundPage}
@@ -162,6 +202,14 @@ function IOURequestStepVendor({
                 // and shows up as a backdrop flicker on the underlying expense view.
                 if (!didScreenTransitionEnd) {
                     return null;
+                }
+                if (isLoading) {
+                    return (
+                        <ActivityIndicator
+                            size={CONST.ACTIVITY_INDICATOR_SIZE.LARGE}
+                            style={[styles.flex1]}
+                        />
+                    );
                 }
                 return (
                     <SelectionList
